@@ -1,0 +1,550 @@
+﻿<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cunicultura: Producción de Conejos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], display: ['Outfit', 'sans-serif'] } } }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .glass-card { background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-input { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.14); color: #f8fafc; }
+    .glass-input:focus { border-color: #ec4899; outline: none; box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.25); }
+  </style>
+</head>
+<body class="h-full text-slate-100 font-sans antialiased bg-slate-950" x-data="cuniculturaStore()" x-cloak>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- HEADER MODULE BANNER -->
+    <div class="glass-card rounded-2xl p-5 border-l-4 border-pink-500 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-display text-white flex items-center gap-2">
+          🐰 Cunicultura: Producción Técnica de Conejos
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 font-mono">Mov Cunicola.xlsx</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Calculadora integral de dinámica poblacional, jaulas de maternidad/ceba, biomasa en canal y alimento</p>
+      </div>
+      <a href="../../index.html" target="_top" class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2 self-start md:self-auto">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Volver al Portal Principal
+      </a>
+    </div>
+
+    <!-- TOP KPI STRIP -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Hembras Reproductoras</span>
+        <div class="text-base sm:text-lg font-bold text-pink-400 mt-0.5" x-text="formatNumber(numero_madres, 0) + ' madres'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Gazapos Ceba / Año</span>
+        <div class="text-base sm:text-lg font-bold text-amber-300 mt-0.5" x-text="formatNumber(cebaEfectivaAnual, 0) + ' conejos'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Carne en Vivo / Año</span>
+        <div class="text-base sm:text-lg font-bold text-emerald-400 mt-0.5" x-text="formatNumber(carneVivoKg, 1) + ' kg'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Carne en Canal (60%)</span>
+        <div class="text-base sm:text-lg font-bold text-emerald-300 mt-0.5" x-text="formatNumber(carneCanalKg, 1) + ' kg'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Sacos Concentrado (40kg)</span>
+        <div class="text-base sm:text-lg font-bold text-orange-400 mt-0.5" x-text="formatNumber(sacosConcentrado, 1) + ' sacos'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Área Galpón Requerida</span>
+        <div class="text-base sm:text-lg font-bold text-sky-400 mt-0.5" x-text="formatNumber(areaGalponM2, 1) + ' m²'"></div>
+      </div>
+    </div>
+
+    <!-- MAIN INPUTS GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- PARÁMETROS REPRODUCTIVOS (HOJA Cal_Conejo) -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+          <span class="flex items-center gap-2">🐰 1. Parámetros Reproductivos del Conejar</span>
+          <span class="text-[10px] text-pink-400 font-mono">Cal_Conejo</span>
+        </h2>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Hembras Reproductoras (Madres)</label>
+            <input type="number" min="0" x-model.number="numero_madres" class="w-full glass-input rounded-lg p-2 font-bold text-pink-400">
+          </div>
+
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Machos Sementales</label>
+            <div class="w-full glass-input rounded-lg p-2 font-bold text-purple-300 flex justify-between items-center">
+              <span x-text="formatNumber(numeroMachos, 0) + ' machos'"></span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">1 / 10 hembras</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Partos / Madre / Año</label>
+            <input type="number" step="0.5" min="1" max="10" x-model.number="partos_ano" class="w-full glass-input rounded-lg p-2 font-bold text-amber-300">
+          </div>
+
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Gazapos Nacidos / Parto</label>
+            <input type="number" step="0.5" min="1" max="15" x-model.number="gazapos_parto" class="w-full glass-input rounded-lg p-2 font-bold text-yellow-300">
+          </div>
+
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Mortalidad Lactancia (%)</label>
+            <input type="number" step="1" min="0" max="100" x-model.number="mortalidad_lactancia_pct" class="w-full glass-input rounded-lg p-2 font-bold text-rose-400">
+          </div>
+
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Mortalidad Ceba (%)</label>
+            <input type="number" step="1" min="0" max="100" x-model.number="mortalidad_ceba_pct" class="w-full glass-input rounded-lg p-2 font-bold text-red-400">
+          </div>
+        </div>
+      </div>
+
+      <!-- INFRAESTRUCTURA Y JAULAS (HOJAS JAULA & M2) -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+          <span class="flex items-center gap-2">🏗️ 2. Jaulas e Infraestructura Metalúrgica</span>
+          <span class="text-[10px] text-sky-400 font-mono">JAULA & M2</span>
+        </h2>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block mb-0.5">Jaulas Maternidad (Nido):</span>
+            <span class="text-base font-bold text-pink-300 font-mono" x-text="formatNumber(jaulasMaternidad, 0) + ' jaulas'"></span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Ratio: 1 jaula / hembra + 10% rot.</span>
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block mb-0.5">Jaulas Sementales Macho:</span>
+            <span class="text-base font-bold text-purple-300 font-mono" x-text="formatNumber(jaulasMachos, 0) + ' jaulas'"></span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Ratio: 1 jaula / macho</span>
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block mb-0.5">Jaulas Ceba / Engorde:</span>
+            <span class="text-base font-bold text-amber-300 font-mono" x-text="formatNumber(jaulasCeba, 0) + ' jaulas'"></span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Capacidad: 6 conejos / jaula</span>
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block mb-0.5">Bebederos Chupete (Nipple):</span>
+            <span class="text-base font-bold text-sky-400 font-mono" x-text="formatNumber(bebederosChupete, 0) + ' pzas'"></span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">1 chupete por jaula</span>
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-slate-900/80 rounded-xl border border-slate-800 space-y-1.5 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Total Jaulas en la Unidad:</span>
+            <span class="font-bold text-white font-mono" x-text="formatNumber(totalJaulas, 0) + ' jaulas'"></span>
+          </div>
+          <div class="flex justify-between border-t border-slate-800 pt-1.5">
+            <span class="text-slate-400">Superficie Total de Galpón (m²):</span>
+            <span class="font-bold text-sky-400 font-mono" x-text="formatNumber(areaGalponM2, 1) + ' m²'"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ALIMENTACIÓN Y CARNE (HOJAS Alimentacion & Produccion esperada) -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span>🌾 3. Nutrición, Sustitución de Alimento y Rendimiento en Canal</span>
+        <span class="text-xs text-emerald-400 font-mono">Alimentacion & Produccion</span>
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+        <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800 space-y-1">
+          <span class="text-slate-400 block">Peso Final a Sacrificio</span>
+          <input type="number" step="0.1" min="1" x-model.number="peso_final_ceba_kg" class="w-full glass-input rounded p-1.5 font-bold text-emerald-400">
+          <span class="text-[10px] text-slate-500 block">Edad: 10-12 semanas</span>
+        </div>
+
+        <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800 space-y-1">
+          <span class="text-slate-400 block">Rendimiento en Canal (%)</span>
+          <input type="number" step="1" min="40" max="80" x-model.number="rendimiento_canal_pct" class="w-full glass-input rounded p-1.5 font-bold text-yellow-300">
+          <span class="text-[10px] text-slate-500 block">Estándar: 60% en canal</span>
+        </div>
+
+        <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800 space-y-1">
+          <span class="text-slate-400 block">Consumo Ración Madre (g/día)</span>
+          <input type="number" step="10" min="50" x-model.number="consumo_madre_g" class="w-full glass-input rounded p-1.5 font-bold text-pink-300">
+          <span class="text-[10px] text-slate-500 block">Gestación y lactancia</span>
+        </div>
+
+        <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800 space-y-1">
+          <span class="text-slate-400 block">Consumo Ración Ceba (g/día)</span>
+          <input type="number" step="5" min="20" x-model.number="consumo_ceba_g" class="w-full glass-input rounded p-1.5 font-bold text-amber-300">
+          <span class="text-[10px] text-slate-500 block">Promedio etapa engorde</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA PORCENTAJE DE ALIMENTO CON FORRAJE (Porcentaje_alimen_con_Forraje) -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span class="flex items-center gap-2">🥗 Tabla de Sustitución de Alimento (<code class="text-amber-400 text-xs">Porcentaje_alimen_con_Forraje</code>)</span>
+        <span class="text-xs text-orange-400 font-mono" x-text="'Concentrado Total: ' + formatNumber(consumoConcentradoKg, 0) + ' kg (' + formatNumber(sacosConcentrado, 1) + ' sacos)'"></span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[750px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Grupo Etario Cunícola</th>
+              <th class="py-2.5 px-2 text-right text-emerald-400">% Forraje (MS)</th>
+              <th class="py-2.5 px-2 text-right text-orange-400">% Concentrado</th>
+              <th class="py-2.5 px-2 text-right text-amber-300">Consumo Ración Total (kg)</th>
+              <th class="py-2.5 px-2 text-right text-emerald-300 font-bold">Forraje MS (kg)</th>
+              <th class="py-2.5 px-3 text-right text-orange-300 font-bold">Concentrado (kg)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="c in categoriasAlimentacion" :key="c.categoria">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="c.categoria"></td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" step="5" min="0" max="100" x-model.number="c.pct_forraje" @input="c.pct_concentrado = 100 - c.pct_forraje" class="w-16 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-emerald-400"> %
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono text-orange-400 font-bold" x-text="c.pct_concentrado + '%'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-300" x-text="formatNumber(c.racion_total_kg, 1) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-emerald-300 font-bold" x-text="formatNumber(c.forraje_ms_kg, 1) + ' kg'"></td>
+                <td class="py-2.5 px-3 text-right font-mono text-orange-300 font-bold" x-text="formatNumber(c.concentrado_kg, 1) + ' kg'"></td>
+              </tr>
+            </template>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-900/90 font-bold border-t-2 border-slate-700 text-white">
+              <td class="py-3 px-3 uppercase text-slate-300">Total Anual</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-amber-300" x-text="formatNumber(totalesCategorias.racion_total, 1) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-emerald-300 text-sm" x-text="formatNumber(totalesCategorias.forraje_ms, 1) + ' kg MS'"></td>
+              <td class="py-3 px-3 text-right font-mono text-orange-300 text-sm" x-text="formatNumber(totalesCategorias.concentrado, 1) + ' kg'"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- TABLA SUPERFICIE DE CULTIVOS FORRAJEROS (sup_forraje) -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span class="flex items-center gap-2">🌱 Tabla de Superficie de Cultivos Forrajeros (<code class="text-emerald-400 text-xs">sup_forraje</code>) — Excel Filas 4-9</span>
+        <span class="text-xs text-emerald-300 font-mono" x-text="'Requerimiento MS Total: ' + formatNumber(totalesCategorias.forraje_ms, 1) + ' kg'"></span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[850px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Forraje / Especie</th>
+              <th class="py-2.5 px-2 text-right text-slate-300">Verde (kg/ha)</th>
+              <th class="py-2.5 px-2 text-right text-emerald-400">% Hojas</th>
+              <th class="py-2.5 px-2 text-right text-sky-400">N° Cortes</th>
+              <th class="py-2.5 px-2 text-right text-yellow-300">MS (%)</th>
+              <th class="py-2.5 px-2 text-right text-amber-300">MS / Corte (kg)</th>
+              <th class="py-2.5 px-2 text-right text-amber-400">MS / Año (kg)</th>
+              <th class="py-2.5 px-2 text-right text-purple-300">% Uso</th>
+              <th class="py-2.5 px-3 text-right text-emerald-300 font-bold">Sup a Sembrar (ha)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="(c, idx) in cultivosForraje" :key="c.nombre">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="c.nombre"></td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.kg_ha" class="w-24 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-slate-200">
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.pct_hojas" class="w-16 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-emerald-400">
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.cortes" class="w-14 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-sky-400">
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.pct_ms" class="w-16 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-yellow-300">
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-300 font-bold" x-text="formatNumber(tablaForraje[idx].ms_corte_kg, 1) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-400 font-bold" x-text="formatNumber(tablaForraje[idx].ms_ano_kg, 0) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.pct_uso" class="w-16 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-purple-300">
+                </td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-400 text-sm" x-text="formatNumber(tablaForraje[idx].sup_sembrar_ha, 4) + ' ha'"></td>
+              </tr>
+            </template>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-900/90 font-bold border-t-2 border-slate-700 text-white">
+              <td class="py-3 px-3 uppercase text-slate-300">Total General</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-amber-300" x-text="formatNumber(totalesForraje.ms_corte, 1) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-amber-400" x-text="formatNumber(totalesForraje.ms_ano, 0) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-purple-300" x-text="formatNumber(totalesForraje.pct_uso, 0) + '%'"></td>
+              <td class="py-3 px-3 text-right font-mono text-emerald-400 text-base" x-text="formatNumber(totalesForraje.sup_total_ha, 4) + ' ha'"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- PROYECCIÓN MULTIANUAL A 5 AÑOS -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span>📈 Proyección Multianual Cunícola (Años 1 al 5)</span>
+        <span class="text-xs text-pink-400 font-mono">Consolidado Finca</span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[800px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Año</th>
+              <th class="py-2.5 px-2 text-center text-pink-400">Madres</th>
+              <th class="py-2.5 px-2 text-center text-purple-300">Sementales</th>
+              <th class="py-2.5 px-2 text-right text-yellow-300">Nacimientos</th>
+              <th class="py-2.5 px-2 text-right text-amber-300">Conejos Ceba</th>
+              <th class="py-2.5 px-2 text-right text-emerald-400">Carne Vivo (kg)</th>
+              <th class="py-2.5 px-2 text-right text-emerald-300 font-bold">Carne Canal (kg)</th>
+              <th class="py-2.5 px-3 text-right text-orange-400">Concentrado (kg)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="r in proyeccion5Anos()" :key="r.ano">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="'Año ' + r.ano"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-pink-400 font-bold" x-text="r.madres"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-purple-300 font-bold" x-text="r.machos"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-yellow-300" x-text="formatNumber(r.nacimientos, 0)"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-300 font-bold" x-text="formatNumber(r.ceba, 0)"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-emerald-400" x-text="formatNumber(r.carne_vivo, 1) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-emerald-300 font-bold" x-text="formatNumber(r.carne_canal, 1) + ' kg'"></td>
+                <td class="py-2.5 px-3 text-right font-mono text-orange-300" x-text="formatNumber(r.concentrado_kg, 0) + ' kg'"></td>
+              </tr>
+            </template>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-900/90 font-bold border-t-2 border-slate-700 text-white">
+              <td class="py-3 px-3 uppercase text-slate-300">Total 5 Años</td>
+              <td class="py-3 px-2 text-center font-mono text-pink-400">—</td>
+              <td class="py-3 px-2 text-center font-mono text-purple-300">—</td>
+              <td class="py-3 px-2 text-right font-mono text-yellow-300" x-text="formatNumber(totales5Anos.nacimientos, 0)"></td>
+              <td class="py-3 px-2 text-right font-mono text-amber-300" x-text="formatNumber(totales5Anos.ceba, 0)"></td>
+              <td class="py-3 px-2 text-right font-mono text-emerald-400" x-text="formatNumber(totales5Anos.carne_vivo, 1) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-emerald-300 text-sm" x-text="formatNumber(totales5Anos.carne_canal, 1) + ' kg'"></td>
+              <td class="py-3 px-3 text-right font-mono text-orange-300" x-text="formatNumber(totales5Anos.concentrado_kg, 0) + ' kg'"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function cuniculturaStore() {
+      return {
+        numero_madres: 20,
+        partos_ano: 6,
+        gazapos_parto: 8,
+        mortalidad_lactancia_pct: 10,
+        mortalidad_ceba_pct: 5,
+
+        peso_final_ceba_kg: 2.5,
+        rendimiento_canal_pct: 60,
+        consumo_madre_g: 300,
+        consumo_ceba_g: 100,
+
+        // TABLA PORCENTAJE DE ALIMENTO CON FORRAJE (Porcentaje_alimen_con_Forraje)
+        categoriasAlimentacion: [
+          { categoria: 'Madres Lactando', pct_forraje: 15, pct_concentrado: 85 },
+          { categoria: 'Madres Gestación', pct_forraje: 20, pct_concentrado: 80 },
+          { categoria: 'Madres Secas', pct_forraje: 25, pct_concentrado: 75 },
+          { categoria: 'Gazapos en Cría', pct_forraje: 10, pct_concentrado: 90 },
+          { categoria: 'Gazapos en Engorde 1-3', pct_forraje: 15, pct_concentrado: 85 },
+          { categoria: 'Gazapos en Engorde 4-6', pct_forraje: 20, pct_concentrado: 80 },
+          { categoria: 'Reemplazo', pct_forraje: 25, pct_concentrado: 75 },
+          { categoria: 'Padrote (Sementales)', pct_forraje: 25, pct_concentrado: 75 }
+        ],
+
+        // TABLA SUPERFICIE CULTIVOS FORRAJEROS (sup_forraje - Filas 4-9 Excel)
+        cultivosForraje: [
+          { nombre: 'Ramio', kg_ha: 120000, pct_hojas: 40, cortes: 8, pct_ms: 22, pct_uso: 50 },
+          { nombre: 'Botón de Oro', kg_ha: 90000, pct_hojas: 50, cortes: 8, pct_ms: 14, pct_uso: 20 },
+          { nombre: 'Morera', kg_ha: 100000, pct_hojas: 60, cortes: 6, pct_ms: 16, pct_uso: 20 },
+          { nombre: 'Naranjillo (Nacedora)', kg_ha: 53000, pct_hojas: 70, cortes: 4, pct_ms: 18, pct_uso: 10 }
+        ],
+
+        get numeroMachos() {
+          let m = Number(this.numero_madres) || 0;
+          return Math.max(1, Math.round(m / 10));
+        },
+        get nacimientosAnuales() {
+          let m = Number(this.numero_madres) || 0;
+          let p = Number(this.partos_ano) || 0;
+          let g = Number(this.gazapos_parto) || 0;
+          return m * p * g;
+        },
+        get destetadosAnuales() {
+          let mort = (Number(this.mortalidad_lactancia_pct) || 0) / 100;
+          return this.nacimientosAnuales * (1 - mort);
+        },
+        get cebaEfectivaAnual() {
+          let mort = (Number(this.mortalidad_ceba_pct) || 0) / 100;
+          return this.destetadosAnuales * (1 - mort);
+        },
+
+        get carneVivoKg() {
+          let peso = Number(this.peso_final_ceba_kg) || 2.5;
+          return this.cebaEfectivaAnual * peso;
+        },
+        get carneCanalKg() {
+          let rend = (Number(this.rendimiento_canal_pct) || 60) / 100;
+          return this.carneVivoKg * rend;
+        },
+
+        get jaulasMaternidad() {
+          let m = Number(this.numero_madres) || 0;
+          return Math.ceil(m * 1.1);
+        },
+        get jaulasMachos() { return this.numeroMachos; },
+        get jaulasCeba() {
+          return Math.ceil((this.cebaEfectivaAnual / 6) / 6);
+        },
+        get totalJaulas() {
+          return this.jaulasMaternidad + this.jaulasMachos + this.jaulasCeba;
+        },
+        get bebederosChupete() { return this.totalJaulas; },
+        get areaGalponM2() {
+          return (this.jaulasMaternidad * 1.2) + (this.jaulasMachos * 1.0) + (this.jaulasCeba * 0.8) + 10;
+        },
+
+        get racionTotalBaseKg() {
+          let m = Number(this.numero_madres) || 0;
+          let cm = (Number(this.consumo_madre_g) || 300) / 1000;
+          let cc = (Number(this.consumo_ceba_g) || 100) / 1000;
+          let cons_madres = m * cm * 365;
+          let cons_ceba = this.cebaEfectivaAnual * cc * 60;
+          return cons_madres + cons_ceba;
+        },
+
+        get categoriasAlimentacionCalculadas() {
+          let total_base = this.racionTotalBaseKg;
+          // Asignar peso a cada categoria etaria
+          let weights = [0.20, 0.15, 0.05, 0.05, 0.20, 0.25, 0.05, 0.05];
+          return this.categoriasAlimentacion.map((c, idx) => {
+            let racion_cat = total_base * weights[idx];
+            let pct_f = (Number(c.pct_forraje) || 0) / 100;
+            let pct_c = (Number(c.pct_concentrado) || 0) / 100;
+            return {
+              categoria: c.categoria,
+              pct_forraje: c.pct_forraje,
+              pct_concentrado: c.pct_concentrado,
+              racion_total_kg: racion_cat,
+              forraje_ms_kg: racion_cat * pct_f,
+              concentrado_kg: racion_cat * pct_c
+            };
+          });
+        },
+
+        get totalesCategorias() {
+          let list = this.categoriasAlimentacionCalculadas;
+          return {
+            racion_total: list.reduce((s, r) => s + r.racion_total_kg, 0),
+            forraje_ms: list.reduce((s, r) => s + r.forraje_ms_kg, 0),
+            concentrado: list.reduce((s, r) => s + r.concentrado_kg, 0)
+          };
+        },
+
+        get consumoConcentradoKg() {
+          return this.totalesCategorias.concentrado;
+        },
+        get sacosConcentrado() { return this.consumoConcentradoKg / 40; },
+
+        get tablaForraje() {
+          let total_ms_req = this.totalesCategorias.forraje_ms;
+          return this.cultivosForraje.map(c => {
+            let kg_ha = Number(c.kg_ha) || 0;
+            let pct_hojas = (Number(c.pct_hojas) || 0) / 100;
+            let cortes = Number(c.cortes) || 1;
+            let pct_ms = (Number(c.pct_ms) || 0) / 100;
+            let pct_uso = (Number(c.pct_uso) || 0) / 100;
+
+            let ms_corte_kg = ((kg_ha * pct_hojas) / cortes) * pct_ms;
+            let ms_ano_kg = ms_corte_kg * cortes;
+            let sup_sembrar_ha = ms_ano_kg > 0 ? (total_ms_req / ms_ano_kg) * pct_uso : 0;
+
+            return {
+              ms_corte_kg: ms_corte_kg,
+              ms_ano_kg: ms_ano_kg,
+              sup_sembrar_ha: sup_sembrar_ha
+            };
+          });
+        },
+
+        get totalesForraje() {
+          let list = this.tablaForraje;
+          return {
+            ms_corte: list.reduce((s, r) => s + r.ms_corte_kg, 0),
+            ms_ano: list.reduce((s, r) => s + r.ms_ano_kg, 0),
+            pct_uso: this.cultivosForraje.reduce((s, c) => s + (Number(c.pct_uso) || 0), 0),
+            sup_total_ha: list.reduce((s, r) => s + r.sup_sembrar_ha, 0)
+          };
+        },
+
+        proyeccion5Anos() {
+          let res = [];
+          for (let a = 1; a <= 5; a++) {
+            res.push({
+              ano: a,
+              madres: this.numero_madres,
+              machos: this.numeroMachos,
+              nacimientos: this.nacimientosAnuales,
+              ceba: this.cebaEfectivaAnual,
+              carne_vivo: this.carneVivoKg,
+              carne_canal: this.carneCanalKg,
+              concentrado_kg: this.consumoConcentradoKg
+            });
+          }
+          return res;
+        },
+        get totales5Anos() {
+          let list = this.proyeccion5Anos();
+          return {
+            nacimientos: list.reduce((s, r) => s + r.nacimientos, 0),
+            ceba: list.reduce((s, r) => s + r.ceba, 0),
+            carne_vivo: list.reduce((s, r) => s + r.carne_vivo, 0),
+            carne_canal: list.reduce((s, r) => s + r.carne_canal, 0),
+            concentrado_kg: list.reduce((s, r) => s + r.concentrado_kg, 0)
+          };
+        },
+
+        formatNumber(val, decimals = 2) {
+          if (val === undefined || val === null || isNaN(val)) return '0';
+          return Number(val).toLocaleString('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+

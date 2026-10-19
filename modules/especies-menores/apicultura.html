@@ -1,0 +1,213 @@
+﻿<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apicultura 5 Núcleos y Subproductos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], display: ['Outfit', 'sans-serif'] } } }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .glass-card { background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-input { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.14); color: #f8fafc; }
+    .glass-input:focus { border-color: #f59e0b; outline: none; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25); }
+  </style>
+</head>
+<body class="h-full text-slate-100 font-sans antialiased bg-slate-950" x-data="apiculturaStore()" x-cloak>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- HEADER MODULE BANNER -->
+    <div class="glass-card rounded-2xl p-5 border-l-4 border-amber-400 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-display text-white flex items-center gap-2">
+          🐝 Apicultura: Producción de Miel & Subproductos
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">Apicolas 5 nucleos.xlsx</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Modelo de proyección física apícola (miel en botellas 750ml, cera, polen, propóleo a 5 años)</p>
+      </div>
+      <a href="../../index.html" target="_top" class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2 self-start md:self-auto">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Volver al Portal Principal
+      </a>
+    </div>
+
+    <!-- TOP KPI STRIP -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Miel Anual</span>
+        <div class="text-base sm:text-lg font-bold text-amber-400 mt-0.5" x-text="formatNumber(mielTotalKg, 0) + ' kg'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Botellas Miel (750ml)</span>
+        <div class="text-base sm:text-lg font-bold text-yellow-300 mt-0.5" x-text="formatNumber(botellasMielTotal, 0) + ' bot'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Cera Anual</span>
+        <div class="text-base sm:text-lg font-bold text-slate-200 mt-0.5" x-text="formatNumber(ceraTotalKg, 1) + ' kg'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Polen Anual</span>
+        <div class="text-base sm:text-lg font-bold text-amber-300 mt-0.5" x-text="formatNumber(polenTotalKg, 1) + ' kg'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Propóleo Anual</span>
+        <div class="text-base sm:text-lg font-bold text-amber-400 mt-0.5" x-text="formatNumber(propolioTotalKg, 1) + ' kg'"></div>
+      </div>
+    </div>
+
+    <!-- MAIN INPUTS CARD -->
+    <div class="glass-card rounded-2xl p-6 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+        🍯 Parámetros del Apiario y Rendimientos de Cosecha
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+        <div>
+          <label class="text-slate-300 font-semibold block mb-1">Número de Colmenas</label>
+          <input type="number" min="0" x-model.number="numero_colmenas" class="w-full glass-input rounded-lg p-2.5 font-bold text-amber-400">
+        </div>
+        <div>
+          <label class="text-slate-300 font-semibold block mb-1">Cosechas por Año</label>
+          <input type="number" min="1" max="6" x-model.number="ciclos_ano" class="w-full glass-input rounded-lg p-2.5 font-bold text-white">
+        </div>
+        <div>
+          <label class="text-slate-300 font-semibold block mb-1">Rend. Miel (kg/colmena/cosecha)</label>
+          <input type="number" step="1" min="0" x-model.number="rend_miel_colmena" class="w-full glass-input rounded-lg p-2.5 font-bold text-yellow-300">
+        </div>
+        <div>
+          <label class="text-slate-300 font-semibold block mb-1">Rend. Cera (kg/colmena/año)</label>
+          <input type="number" step="0.1" min="0" x-model.number="rend_cera_colmena" class="w-full glass-input rounded-lg p-2.5 font-bold text-white">
+        </div>
+        <div>
+          <label class="text-slate-300 font-semibold block mb-1">Rend. Polen (kg/colmena/año)</label>
+          <input type="number" step="0.5" min="0" x-model.number="rend_polen_colmena" class="w-full glass-input rounded-lg p-2.5 font-bold text-amber-300">
+        </div>
+        <div>
+          <label class="text-slate-300 font-semibold block mb-1">Rend. Propóleo (kg/colmena/año)</label>
+          <input type="number" step="0.1" min="0" x-model.number="rend_propolio_colmena" class="w-full glass-input rounded-lg p-2.5 font-bold text-amber-400">
+        </div>
+      </div>
+    </div>
+
+    <!-- PROYECCIÓN MULTIANUAL A 5 AÑOS -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span>📈 Proyección Multianual de Producción Apícola (Años 1 al 5)</span>
+        <span class="text-xs text-amber-400 font-mono">Consolidado Físico</span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[700px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Año</th>
+              <th class="py-2.5 px-2 text-center">N° Colmenas</th>
+              <th class="py-2.5 px-2 text-right text-amber-400">Miel Total (kg)</th>
+              <th class="py-2.5 px-2 text-right text-yellow-300">Botellas 750ml</th>
+              <th class="py-2.5 px-2 text-right text-slate-200">Cera (kg)</th>
+              <th class="py-2.5 px-2 text-right text-amber-300">Polen (kg)</th>
+              <th class="py-2.5 px-3 text-right text-amber-400">Propóleo (kg)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="r in proyeccion5Anos()" :key="r.ano">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="'Año ' + r.ano"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-amber-400 font-bold" x-text="r.colmenas"></td>
+                <td class="py-2.5 px-2 text-right font-mono font-bold text-amber-300" x-text="formatNumber(r.miel_kg, 0) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono font-bold text-yellow-300" x-text="formatNumber(r.botellas, 0) + ' bot'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-slate-200" x-text="formatNumber(r.cera, 1) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-300" x-text="formatNumber(r.polen, 1) + ' kg'"></td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-amber-400" x-text="formatNumber(r.prop, 1) + ' kg'"></td>
+              </tr>
+            </template>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-900/90 font-bold border-t-2 border-slate-700 text-white">
+              <td class="py-3 px-3 uppercase text-slate-300">Total 5 Años</td>
+              <td class="py-3 px-2 text-center font-mono text-amber-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-amber-300" x-text="formatNumber(totales5Anos.miel_kg, 0) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-yellow-300" x-text="formatNumber(totales5Anos.botellas, 0) + ' bot'"></td>
+              <td class="py-3 px-2 text-right font-mono text-slate-200" x-text="formatNumber(totales5Anos.cera, 1) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-amber-300" x-text="formatNumber(totales5Anos.polen, 1) + ' kg'"></td>
+              <td class="py-3 px-3 text-right font-mono text-amber-400" x-text="formatNumber(totales5Anos.prop, 1) + ' kg'"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function apiculturaStore() {
+      return {
+        numero_colmenas: 5,
+        rend_miel_colmena: 18,
+        ciclos_ano: 3,
+        rend_cera_colmena: 1.8,
+        rend_polen_colmena: 3.0,
+        rend_propolio_colmena: 0.5,
+        peso_botella_kg: 1.0515,
+
+        get isZero() { return (Number(this.numero_colmenas) || 0) <= 0 || (Number(this.rend_miel_colmena) || 0) <= 0; },
+        get mielTotalKg() { return this.isZero ? 0 : (Number(this.numero_colmenas) || 0) * (Number(this.rend_miel_colmena) || 0) * (Number(this.ciclos_ano) || 1); },
+        get botellasMielTotal() { return this.isZero ? 0 : this.mielTotalKg / (Number(this.peso_botella_kg) || 1.0515); },
+        get ceraTotalKg() { return this.isZero ? 0 : (Number(this.numero_colmenas) || 0) * (Number(this.rend_cera_colmena) || 0); },
+        get polenTotalKg() { return this.isZero ? 0 : (Number(this.numero_colmenas) || 0) * (Number(this.rend_polen_colmena) || 0); },
+        get propolioTotalKg() { return this.isZero ? 0 : (Number(this.numero_colmenas) || 0) * (Number(this.rend_propolio_colmena) || 0); },
+
+        proyeccion5Anos() {
+          let res = [];
+          for (let a = 1; a <= 5; a++) {
+            let mult = 1 + (a - 1) * 0.15; // 15% annual colony expansion
+            let colm = Math.round((Number(this.numero_colmenas) || 0) * mult);
+            let miel = (colm * (Number(this.rend_miel_colmena) || 0) * (Number(this.ciclos_ano) || 1));
+            let bot = miel / (Number(this.peso_botella_kg) || 1.0515);
+            let cera = colm * (Number(this.rend_cera_colmena) || 0);
+            let polen = colm * (Number(this.rend_polen_colmena) || 0);
+            let prop = colm * (Number(this.rend_propolio_colmena) || 0);
+
+            res.push({
+              ano: a,
+              colmenas: this.isZero ? 0 : colm,
+              miel_kg: this.isZero ? 0 : miel,
+              botellas: this.isZero ? 0 : bot,
+              cera: this.isZero ? 0 : cera,
+              polen: this.isZero ? 0 : polen,
+              prop: this.isZero ? 0 : prop
+            });
+          }
+          return res;
+        },
+        get totales5Anos() {
+          let list = this.proyeccion5Anos();
+          return {
+            miel_kg: list.reduce((s, r) => s + r.miel_kg, 0),
+            botellas: list.reduce((s, r) => s + r.botellas, 0),
+            cera: list.reduce((s, r) => s + r.cera, 0),
+            polen: list.reduce((s, r) => s + r.polen, 0),
+            prop: list.reduce((s, r) => s + r.prop, 0)
+          };
+        },
+
+        formatNumber(val, decimals = 2) {
+          if (val === undefined || val === null || isNaN(val)) return '0';
+          return Number(val).toLocaleString('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+

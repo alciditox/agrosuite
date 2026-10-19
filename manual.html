@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual de uso — AgroSuite 360° Planificación Agropecuaria</title>
+<style>
+:root{--brand:#166534;--brand2:#22c55e;--ink:#1e293b;--muted:#64748b;--line:#e2e8f0;--bg:#f8faf9}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.65;font-size:15px}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px 80px}
+header.hero{background:linear-gradient(135deg,#166534,#0f4a2f);color:#fff;padding:38px 20px 30px}
+header.hero .inner{max-width:960px;margin:0 auto}
+header.hero h1{margin:0 0 6px;font-size:26px}
+header.hero p{margin:0;opacity:.9;font-size:14.5px;max-width:680px}
+header.hero .badge{display:inline-block;margin-top:14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 14px;font-size:12.5px;font-weight:600}
+nav.toc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin:26px 0 8px}
+nav.toc h2{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+nav.toc ol{margin:0;padding-left:20px;columns:2;column-gap:30px}
+nav.toc li{margin:4px 0}
+nav.toc a{color:var(--brand);text-decoration:none;font-weight:600;font-size:13.5px}
+nav.toc a:hover{text-decoration:underline}
+section{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px 26px;margin-top:20px}
+section h2{margin:0 0 4px;font-size:20px;color:var(--brand);scroll-margin-top:20px;display:flex;align-items:center;gap:10px}
+section h2 .n{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;background:#dcfce7;color:var(--brand);border-radius:9px;font-size:15px;flex:0 0 30px}
+section h3{margin:22px 0 6px;font-size:16px;color:var(--ink)}
+section p{margin:8px 0}
+section ul,section ol{margin:8px 0;padding-left:24px}
+section li{margin:5px 0}
+.lead{color:var(--muted);font-size:14px;margin-bottom:6px}
+.note{background:#f0f7f2;border-left:4px solid var(--brand2);border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0;font-size:14px}
+.warn{background:#fffbeb;border-left:4px solid #f59e0b;border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0;font-size:14px}
+code{background:#f1f5f4;padding:2px 6px;border-radius:5px;font-size:13px;color:#166534}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#f1f5f4;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+tr:nth-child(even) td{background:#fafcfb}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:700}
+.pill.bov{background:#dcfce7;color:#166534}
+.pill.buf{background:#ede9fe;color:#6d28d9}
+.pill.men{background:#fef3c7;color:#b45309}
+.pill.por{background:#ffe4e6;color:#be123c}
+.pill.avi{background:#dbeafe;color:#1d4ed8}
+.pill.alt{background:#d1fae5;color:#047857}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.card{border:1px solid var(--line);border-radius:11px;padding:14px 16px}
+.card h4{margin:0 0 6px;font-size:14.5px;color:var(--brand)}
+.card p{margin:0;font-size:13px;color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:30px}
+@media(max-width:640px){nav.toc ol{columns:1}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="inner">
+    <h1>📘 Manual de uso · AgroSuite 360°</h1>
+    <p>Guía del panel central y 33 módulos agropecuarios: simulación climática, diagnóstico zootécnico en tiempo real, gestión multi-predio, economía circular y PWA 100% offline.</p>
+    <span class="badge">Versión 2.0 · Plataforma de Planificación Agropecuaria</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+<nav class="toc">
+  <h2>Contenido</h2>
+  <ol>
+    <li><a href="#que-es">Qué es AgroSuite 360°</a></li>
+    <li><a href="#graficos">Tacómetros y Gráficos en Vivo</a></li>
+    <li><a href="#clima">Simulación de Resiliencia Climática</a></li>
+    <li><a href="#auditoria">Dictamen Zootécnico Experto</a></li>
+    <li><a href="#multi-finca">Gestión Multi-Predio ("Mis Fincas")</a></li>
+    <li><a href="#respaldo">Copia de Seguridad (JSON) y PWA Offline</a></li>
+    <li><a href="#circular">Granja Integrada y Economía Circular</a></li>
+    <li><a href="#dossier">Generación de Dossier Técnico para Crédito</a></li>
+    <li><a href="#modulos">Catálogo de los 33 Módulos</a></li>
+    <li><a href="#faq">Preguntas Frecuentes</a></li>
+  </ol>
+</nav>
+
+<section id="que-es">
+  <h2><span class="n">1</span> Qué es AgroSuite 360°</h2>
+  <p class="lead">Un portal web integral que agrupa 33 calculadoras y simuladores especializados para la producción agropecuaria.</p>
+  <p>El sistema proyecta dinámicas de hato a 10 años, requerimientos forrajeros con margen preventivo, estrés hídrico por sequías, programas de alimentación, instalaciones y economía circular sin depender de conexión a internet ni de servidores externos.</p>
+</section>
+
+<section id="graficos">
+  <h2><span class="n">2</span> Tacómetros y Gráficos en Vivo</h2>
+  <p>El panel central incorpora el motor gráfico <strong>AgroCharts</strong> (SVG vectorial ultra-ligero), que muestra:</p>
+  <ul>
+    <li><strong>Tacómetro de Balance:</strong> Representa visualmente si el predio está en superávit (verde) o déficit (rojo) de Unidades Animales (UA).</li>
+    <li><strong>Comparativa Oferta vs. Demanda:</strong> Gráfico de barras que compara la capacidad forrajera contra el requerimiento con margen.</li>
+  </ul>
+</section>
+
+<section id="clima">
+  <h2><span class="n">3</span> Simulación de Resiliencia Climática</h2>
+  <p>Permite anticiparse a contingencias climáticas mediante el selector de escenario en la cabecera del resumen:</p>
+  <ul>
+    <li><strong>☀️ Clima Normal:</strong> Oferta forrajera al 100%.</li>
+    <li><strong>⛅ Sequía Leve (-15%):</strong> Retraso en rebrotes.</li>
+    <li><strong>🍂 Sequía Moderada (-30%):</strong> Estiaje prolongado de 3 a 4 meses.</li>
+    <li><strong>🏜️ Sequía Severa (-45%):</strong> Fenómeno El Niño o sequías mayores a 5 meses. Calcula exactamente cuántos fardos de heno/silo se necesitan al mes o cuántos animales deben descargarse preventivamente.</li>
+    <li><strong>🌧️ Año Lluvioso (+20%):</strong> Abundancia de biomasa para conservación.</li>
+  </ul>
+</section>
+
+<section id="auditoria">
+  <h2><span class="n">4</span> Dictamen Zootécnico Experto</h2>
+  <p>El motor heurístico <strong>AgroAdvisor</strong> audita en tiempo real los parámetros del predio emitiendo tarjetas semafóricas:</p>
+  <ul>
+    <li><span class="pill bov">🟢 Óptimo:</span> Carga equilibrada y balance forrajero sostenible.</li>
+    <li><span class="pill men">🟡 Advertencia:</span> Riesgos de subutilización o márgenes ajustados ante veranos.</li>
+    <li><span class="pill por">🔴 Crítico:</span> Sobrepastoreo inminente o déficit nutricional severo, acompañado de la estrategia agronómica recomendada (bancos de proteína, rotación Voisin o ajuste de carga).</li>
+  </ul>
+</section>
+
+<section id="multi-finca">
+  <h2><span class="n">5</span> Gestión Multi-Predio ("Mis Fincas")</h2>
+  <p>Permite gestionar múltiples propiedades agrícolas o ganaderas de forma totalmente independiente:</p>
+  <ul>
+    <li>Use el selector <strong>🏡 Predio</strong> en la barra superior para alternar entre haciendas.</li>
+    <li>Haga clic en <strong>+ Finca</strong> para crear una nueva unidad productiva. Los cálculos y datos modificados en las calculadoras se aislarán bajo el nombre de ese predio.</li>
+  </ul>
+</section>
+
+<section id="respaldo">
+  <h2><span class="n">6</span> Copia de Seguridad (JSON) y PWA Offline</h2>
+  <p>Garantía de control total sobre sus datos:</p>
+  <ul>
+    <li><strong>💾 Respaldo:</strong> Descarga instantáneamente un archivo <code>.agrobackup.json</code> con todas sus fincas, módulos y parámetros.</li>
+    <li><strong>📂 Restaurar:</strong> Permite cargar un respaldo previo en cualquier dispositivo.</li>
+    <li><strong>Instalación PWA:</strong> Compatible con la tecnología Progressive Web App. Puede instalarse en teléfonos Android/iOS o computadoras para abrirse como una aplicación de escritorio o móvil sin señal de internet.</li>
+  </ul>
+</section>
+
+<section id="circular">
+  <h2><span class="n">7</span> Granja Integrada y Economía Circular</h2>
+  <p>El nuevo módulo <strong>Granja Integrada y Economía Circular</strong> vincula el ciclo biológico de la finca:</p>
+  <ul>
+    <li>Estima la biomasa de estiércol y purines diarios producidos por bovinos, cerdos y aves.</li>
+    <li>Dimensiona los metros cuadrados de lechos de <strong>Lombricultura</strong> requeridos para procesar los desechos.</li>
+    <li>Calcula la cosecha anual de humus sólido y biolixiviado líquido foliar.</li>
+    <li>Determina el ahorro económico monetario al sustituir fertilizantes químicos (Urea y N-P-K) por abono orgánico del propio predio.</li>
+  </ul>
+</section>
+
+<section id="dossier">
+  <h2><span class="n">8</span> Generación de Dossier Técnico para Crédito</h2>
+  <p>Al hacer clic en el botón <strong>📄 Dossier</strong> de la barra superior, el sistema activa una vista de impresión ejecutiva optimizada que oculta menús y barras laterales, generando un informe técnico formal listo para exportar a PDF o presentar ante entidades financieras e inversores.</p>
+</section>
+
+<section id="modulos">
+  <h2><span class="n">9</span> Catálogo de los 33 Módulos</h2>
+  <table>
+    <thead><tr><th>Sistema</th><th>Módulo</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill bov">Bovino</span></td><td>Vaca – Becerro</td><td>Cría tradicional: nacimiento y destete.</td></tr>
+      <tr><td><span class="pill bov">Bovino</span></td><td>Becerro – Maute</td><td>Levante temprano hasta maute.</td></tr>
+      <tr><td><span class="pill bov">Bovino</span></td><td>Vaca – Maute</td><td>Cría y levante integrados en un solo módulo.</td></tr>
+      <tr><td><span class="pill bov">Bovino</span></td><td>Maute – Novillo</td><td>Levante de maute hasta novillo.</td></tr>
+      <tr><td><span class="pill bov">Bovino</span></td><td>Novillo – Ceba</td><td>Engorde final a pasto para venta en pie.</td></tr>
+      <tr><td><span class="pill bov">Bovino</span></td><td>Vaca – Novillo (Ciclo Completo)</td><td>Ciclo integral a 10 años: de la vaca al novillo gordo.</td></tr>
+      <tr><td><span class="pill buf">Bufalino</span></td><td>6 Modalidades Bubalinas</td><td>Modelos adaptados a las tasas reproductivas y pesos de búfalos.</td></tr>
+      <tr><td><span class="pill men">Rumiantes</span></td><td>Ovino & Caprino</td><td>Producción ovina y caprina de carne, leche y quesos.</td></tr>
+      <tr><td><span class="pill por">Porcino</span></td><td>6 Modalidades Porcinas</td><td>Ciclo completo, cría y engorde con 100% concentrado vs. concentrado + yuca.</td></tr>
+      <tr><td><span class="pill avi">Avicultura</span></td><td>7 Modalidades Avícolas</td><td>Postura comercial, pastoreo agroecológico, jaula, campo, engorde, codornices y patos.</td></tr>
+      <tr><td><span class="pill alt">Alternativos</span></td><td>Acuicultura & Otros</td><td>Piscicultura en lagunas y tanques, apicultura, cunicultura y lombricultura.</td></tr>
+      <tr><td><span class="pill alt">Circular</span></td><td>Granja Integrada & Economía Circular</td><td>Reciclaje de deyecciones, lombricultura y biofertilización.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="faq">
+  <h2><span class="n">10</span> Preguntas Frecuentes</h2>
+  <h3>¿Los datos se envían a algún servidor en la nube?</h3>
+  <p>No. AgroSuite 360° opera 100% en el navegador web del usuario utilizando almacenamiento local (<code>localStorage</code>). Sus datos son estrictamente privados y confidenciales.</p>
+  <h3>¿Cómo puedo transferir mis fincas a otra computadora?</h3>
+  <p>Simplemente haga clic en el botón <strong>💾 Respaldo</strong> en la barra superior para descargar su archivo de respaldo JSON. En la otra computadora, abra AgroSuite y use el botón <strong>📂 Restaurar</strong>.</p>
+</section>
+
+<footer>
+  🌱 AgroSuite 360° · Planificación Agropecuaria Profesional · Manual de Uso
+</footer>
+
+</div>
+</body>
+</html>

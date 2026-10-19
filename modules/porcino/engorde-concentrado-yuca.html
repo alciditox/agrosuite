@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Ganadera Porcina · Engorde con Concentrado y Yuca</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{
+  brand:{50:'#f3f8f0',100:'#e3efdb',200:'#c7dfb9',300:'#a0c88b',400:'#79ad5e',500:'#5a9140',600:'#447230',700:'#375a28',800:'#2e4824',900:'#283c20'},
+  yuca:{50:'#fdf6ec',100:'#f8e8cf',200:'#efcf9c',300:'#e4b16a',400:'#d7943f',500:'#c67c2a',600:'#a56322'},
+  clay:{400:'#d98a5b',500:'#c56f3f',600:'#a9572e'}},
+  fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--ring:#5a9140;}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(160deg,#f6faf3 0%,#f3f1e6 100%);}
+  .glass{backdrop-filter:blur(10px);background:rgba(255,255,255,.74);}
+  .card{border:1px solid rgba(68,114,48,.12);box-shadow:0 1px 2px rgba(40,60,32,.04),0 8px 24px -12px rgba(40,60,32,.18);}
+  .num-in{transition:all .15s ease;}
+  .num-in:focus{outline:none;border-color:var(--ring);box-shadow:0 0 0 3px rgba(90,145,64,.18);}
+  .fade-up{animation:fu .5s ease both}@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  table{border-collapse:separate;border-spacing:0}.tbl th,.tbl td{white-space:nowrap}
+  .kpi{background:linear-gradient(135deg,#447230,#5a9140)}.kpi2{background:linear-gradient(135deg,#2e4824,#447230)}
+  .kpi3{background:linear-gradient(135deg,#a56322,#d7943f)}.kpi4{background:linear-gradient(135deg,#375a28,#79ad5e)}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-webkit-appearance:textfield;-moz-appearance:textfield;appearance:textfield}
+  .pill{font-size:11px;font-weight:600;letter-spacing:.03em}
+  ::-webkit-scrollbar{height:9px;width:9px}::-webkit-scrollbar-thumb{background:#c7dfb9;border-radius:9px}
+  @media print{.no-print{display:none!important}body{background:#fff}}
+</style>
+</head>
+<body class="text-brand-900">
+
+<header class="glass sticky top-0 z-30 border-b border-brand-200/60">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="h-11 w-11 rounded-2xl kpi flex items-center justify-center text-white text-2xl shadow-lg">🐷</div>
+      <div>
+        <h1 class="text-base sm:text-lg font-800 leading-tight">Calculadora Ganadera Porcina</h1>
+        <p class="text-[11px] sm:text-xs text-brand-600 font-medium">Engorde con alimento concentrado + yuca 🍠</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 no-print">
+      <button id="btnReset" class="text-xs font-semibold px-3 py-2 rounded-xl border border-brand-200 hover:bg-brand-50 transition">↻ Restablecer</button>
+      <button id="btnPrint" class="text-xs font-semibold px-3 py-2 rounded-xl text-white kpi hover:brightness-110 transition shadow">🖨 Imprimir / PDF</button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" id="kpis"></section>
+
+  <div class="grid lg:grid-cols-12 gap-6">
+    <!-- ENTRADAS -->
+    <div class="lg:col-span-4 space-y-6">
+      <div class="card rounded-2xl bg-white p-5 fade-up">
+        <h2 class="font-700 text-sm uppercase tracking-wide text-brand-700 flex items-center gap-2 mb-4"><span class="h-5 w-5 rounded-md kpi"></span>Datos del Rebaño</h2>
+        <label class="block mb-4"><span class="text-xs font-semibold text-brand-700">Nº de Lechones (compra inicial)</span>
+          <input id="lechones" type="number" min="0" step="1" value="23" class="num-in mt-1 w-full rounded-xl border border-brand-200 px-3 py-2 text-lg font-700"></label>
+        <p class="text-xs font-semibold text-brand-700 mb-2">Mortalidad por etapa (%)</p>
+        <div class="grid grid-cols-3 gap-2">
+          <label class="block"><span class="pill text-brand-600">Iniciador</span><div class="relative"><input id="mIni" type="number" step="0.1" value="5" class="num-in w-full rounded-lg border border-brand-200 pl-2 pr-5 py-1.5 text-sm font-600"><span class="absolute right-2 top-1.5 text-xs text-brand-400">%</span></div></label>
+          <label class="block"><span class="pill text-brand-600">Crecim.</span><div class="relative"><input id="mCre" type="number" step="0.1" value="3" class="num-in w-full rounded-lg border border-brand-200 pl-2 pr-5 py-1.5 text-sm font-600"><span class="absolute right-2 top-1.5 text-xs text-brand-400">%</span></div></label>
+          <label class="block"><span class="pill text-brand-600">Adulto</span><div class="relative"><input id="mAdu" type="number" step="0.1" value="1" class="num-in w-full rounded-lg border border-brand-200 pl-2 pr-5 py-1.5 text-sm font-600"><span class="absolute right-2 top-1.5 text-xs text-brand-400">%</span></div></label>
+        </div>
+      </div>
+
+      <div class="card rounded-2xl bg-white p-5 fade-up">
+        <h2 class="font-700 text-sm uppercase tracking-wide text-yuca-600 flex items-center gap-2 mb-4"><span class="h-5 w-5 rounded-md kpi3"></span>Cultivo de Yuca</h2>
+        <div class="space-y-3">
+          <label class="block"><span class="text-xs font-semibold text-brand-700">Rendimiento de ra\u00edces (kg/ha)</span><input id="yRend" type="number" step="100" value="14000" class="num-in mt-1 w-full rounded-xl border border-brand-200 px-3 py-2 font-600"></label>
+          <label class="block"><span class="text-xs font-semibold text-brand-700">Materia seca de la yuca (%)</span><div class="relative"><input id="yMS" type="number" step="0.5" value="35" class="num-in mt-1 w-full rounded-xl border border-brand-200 px-3 py-2 font-600"><span class="absolute right-3 top-3 text-xs text-brand-400">%</span></div></label>
+        </div>
+      </div>
+
+      <div class="card rounded-2xl bg-white p-5 fade-up">
+        <h2 class="font-700 text-sm uppercase tracking-wide text-clay-600 flex items-center gap-2 mb-4"><span class="h-5 w-5 rounded-md" style="background:linear-gradient(135deg,#a9572e,#c56f3f)"></span>Economía <span class="pill text-clay-400 normal-case font-500">(opcional)</span></h2>
+        <div class="space-y-3">
+          <label class="block"><span class="text-xs font-semibold text-brand-700">Precio del concentrado (USD/kg)</span><input id="pConc" type="number" step="0.01" value="0.65" class="num-in mt-1 w-full rounded-xl border border-brand-200 px-3 py-2 font-600"></label>
+          <label class="block"><span class="text-xs font-semibold text-brand-700">Precio yuca fresca (USD/kg)</span><input id="pYuca" type="number" step="0.01" value="0.10" class="num-in mt-1 w-full rounded-xl border border-brand-200 px-3 py-2 font-600"></label>
+          <label class="block"><span class="text-xs font-semibold text-brand-700">Precio venta cerdo en pie (USD/kg)</span><input id="pVenta" type="number" step="0.01" value="2.20" class="num-in mt-1 w-full rounded-xl border border-brand-200 px-3 py-2 font-600"></label>
+          <label class="block"><span class="text-xs font-semibold text-brand-700">Costo por lech\u00f3n (USD)</span><input id="pLechon" type="number" step="0.5" value="45" class="num-in mt-1 w-full rounded-xl border border-brand-200 px-3 py-2 font-600"></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div class="lg:col-span-8 space-y-6">
+      <div class="card rounded-2xl bg-white p-5 fade-up">
+        <h2 class="font-700 text-sm uppercase tracking-wide text-brand-700 flex items-center gap-2 mb-3"><span class="h-5 w-5 rounded-md kpi"></span>Parámetros por Fase <span class="pill text-brand-400 normal-case font-500">editable</span></h2>
+        <div class="overflow-x-auto -mx-1">
+          <table class="tbl w-full text-sm min-w-[700px]">
+            <thead><tr class="text-left text-[11px] uppercase text-brand-500 border-b border-brand-100">
+              <th class="py-2 pr-2">Etapa</th><th class="py-2 px-1">P.Ini<br>(kg)</th><th class="py-2 px-1">P.Fin<br>(kg)</th><th class="py-2 px-1">GDP<br>(kg/d)</th><th class="py-2 px-1">Consumo<br>(kg/d)</th><th class="py-2 px-1">% Conc.</th><th class="py-2 px-1">% Yuca</th>
+            </tr></thead><tbody id="phaseInputs"></tbody>
+          </table>
+        </div>
+        <p class="text-[11px] text-brand-500 mt-2">GDP = Ganancia Diaria de Peso. El % de yuca est\u00e1 expresado en <b>base seca (materia seca)</b>. Conc. + Yuca deber\u00edan sumar ≈100%.</p>
+      </div>
+
+      <div class="card rounded-2xl bg-white p-5 fade-up">
+        <h2 class="font-700 text-sm uppercase tracking-wide text-brand-700 flex items-center gap-2 mb-3"><span class="h-5 w-5 rounded-md kpi2"></span>Movimiento de Rebaño</h2>
+        <div class="overflow-x-auto"><table class="tbl w-full text-sm min-w-[520px]">
+          <thead><tr class="text-left text-[11px] uppercase text-brand-500 border-b border-brand-100"><th class="py-2 pr-2">Etapa</th><th class="py-2 px-2 text-right">Rebaño inicial</th><th class="py-2 px-2 text-right">Mortalidad</th><th class="py-2 px-2 text-right">Sobreviven</th></tr></thead>
+          <tbody id="herdBody"></tbody></table></div>
+      </div>
+
+      <div class="card rounded-2xl bg-white p-5 fade-up">
+        <h2 class="font-700 text-sm uppercase tracking-wide text-brand-700 flex items-center gap-2 mb-3"><span class="h-5 w-5 rounded-md kpi"></span>Consumo de Alimento por Fase</h2>
+        <div class="overflow-x-auto"><table class="tbl w-full text-xs sm:text-sm min-w-[860px]">
+          <thead><tr class="text-left text-[10px] uppercase text-brand-500 border-b border-brand-100">
+            <th class="py-2 pr-2">Fase</th><th class="py-2 px-2 text-right">Días</th><th class="py-2 px-2 text-right">Conc./cerdo/d (kg)</th><th class="py-2 px-2 text-right">Yuca MS/cerdo/d (kg)</th><th class="py-2 px-2 text-right">Alim./fase (kg)</th><th class="py-2 px-2 text-right">C.A.</th><th class="py-2 px-2 text-right">Animales</th><th class="py-2 px-2 text-right text-brand-700">Conc. total (kg)</th><th class="py-2 px-2 text-right text-yuca-600">Yuca total (kg)</th>
+          </tr></thead><tbody id="feedBody"></tbody><tfoot id="feedFoot" class="font-700 text-brand-800"></tfoot>
+        </table></div>
+        <div class="mt-4 grid sm:grid-cols-4 gap-3" id="feedCards"></div>
+      </div>
+
+      <div class="card rounded-2xl bg-white p-5 fade-up">
+        <h2 class="font-700 text-sm uppercase tracking-wide text-yuca-600 flex items-center gap-2 mb-3"><span class="h-5 w-5 rounded-md kpi3"></span>Forraje de Yuca Requerido</h2>
+        <div class="grid sm:grid-cols-4 gap-3" id="yucaCards"></div>
+        <div class="mt-4 rounded-xl bg-yuca-50 border border-yuca-100 p-4">
+          <p class="text-[11px] font-700 uppercase text-yuca-600 mb-2">Relaci\u00f3n de mezcla en fresco (referencia)</p>
+          <div class="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
+            <p class="text-brand-800">• Iniciador / Desarrollo: <b>1 kg Conc. + 0,50 kg Yuca fresca</b></p>
+            <p class="text-brand-800">• Crecimiento I: <b>1 kg Conc. + 0,95 kg Yuca fresca</b></p>
+            <p class="text-brand-800">• Crecimiento II: <b>1 kg Conc. + 1,50 kg Yuca fresca</b></p>
+            <p class="text-brand-800">• Engorde / Finalizaci\u00f3n: <b>1 kg Conc. + 2,30 kg Yuca fresca</b></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card rounded-2xl bg-white p-5 fade-up">
+        <h2 class="font-700 text-sm uppercase tracking-wide text-brand-700 flex items-center gap-2 mb-3"><span class="h-5 w-5 rounded-md kpi4"></span>Producción de Cerdos de Engorde (proyección 5 años)</h2>
+        <div class="overflow-x-auto"><table class="tbl w-full text-sm min-w-[480px]">
+          <thead><tr class="text-left text-[11px] uppercase text-brand-500 border-b border-brand-100"><th class="py-2 pr-2">Año</th><th class="py-2 px-2 text-right">Cerdos de engorde</th><th class="py-2 px-2 text-right">Peso prom. (kg)</th><th class="py-2 px-2 text-right">Peso total (kg)</th></tr></thead>
+          <tbody id="prodBody"></tbody></table></div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="card rounded-2xl bg-white p-5 fade-up">
+          <h2 class="font-700 text-sm uppercase tracking-wide text-brand-700 flex items-center gap-2 mb-3"><span class="h-5 w-5 rounded-md kpi2"></span>Requerimiento de Construcción</h2>
+          <table class="tbl w-full text-sm"><thead><tr class="text-left text-[11px] uppercase text-brand-500 border-b border-brand-100"><th class="py-2">Modalidad</th><th class="py-2 text-right">m²/animal</th><th class="py-2 text-right">Nº</th><th class="py-2 text-right">m² req.</th></tr></thead><tbody id="consBody"></tbody></table>
+          <p class="text-[11px] text-brand-500 mt-2">Incluye 12,5% adicional por pasillos y servicios.</p>
+        </div>
+        <div class="card rounded-2xl bg-white p-5 fade-up">
+          <h2 class="font-700 text-sm uppercase tracking-wide text-clay-600 flex items-center gap-2 mb-3"><span class="h-5 w-5 rounded-md" style="background:linear-gradient(135deg,#a9572e,#c56f3f)"></span>Programa Sanitario</h2>
+          <table class="tbl w-full text-xs"><thead><tr class="text-left text-[10px] uppercase text-brand-500 border-b border-brand-100"><th class="py-1">Tratamiento</th><th class="py-1 text-right">Dosis</th><th class="py-1 text-right">Frascos</th><th class="py-1 text-right">P.U</th><th class="py-1 text-right">Total</th></tr></thead><tbody id="sanBody"></tbody><tfoot id="sanFoot" class="font-700"></tfoot></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="text-center text-[11px] text-brand-500 pt-2 pb-6">Calculadora basada en el modelo <b>Porcino – Engorde con Concentrado y Yuca</b>. Estimaciones t\u00e9cnicas; ajuste los par\u00e1metros a su realidad productiva.</footer>
+</main>
+
+<script>
+const DEF={lechones:23,mIni:5,mCre:3,mAdu:1,yRend:14000,yMS:35,pConc:0.65,pYuca:0.10,pVenta:2.20,pLechon:45,
+  phases:[
+    {name:'Iniciador',ini:15,fin:25,gdp:0.5,cons:1.02,conc:85,yuca:15},
+    {name:'Crecimiento I',ini:25,fin:50,gdp:0.6,cons:1.60,conc:75,yuca:25},
+    {name:'Crecimiento II',ini:50,fin:75,gdp:0.6,cons:2.25,conc:65,yuca:35},
+    {name:'Engorde I / Finalizaci\u00f3n',ini:75,fin:90,gdp:0.7,cons:2.85,conc:55,yuca:45}
+  ]};
+const SAN=[{name:'Neumon\u00eda (NE)',dosis:2,div:50,pu:11},{name:'Peste Porcina (PP)',dosis:1,div:50,pu:11},{name:'Desparasitante',dosis:2,div:100,pu:12},{name:'Vitaminas AD3E',dosis:1,div:100,pu:15}];
+let S=JSON.parse(JSON.stringify(DEF));
+const $=id=>document.getElementById(id);
+const r0=n=>Math.round(n);
+const fmt=(n,d=2)=>isFinite(n)?n.toLocaleString('es',{minimumFractionDigits:d,maximumFractionDigits:d}):'\u2013';
+const usd=n=>'$'+fmt(n,2);
+
+function buildPhaseInputs(){
+  const tb=$('phaseInputs');tb.innerHTML='';
+  S.phases.forEach((p,i)=>{
+    const tr=document.createElement('tr');tr.className='border-b border-brand-50';
+    tr.innerHTML=`<td class="py-1.5 pr-2 font-600 text-brand-800">${p.name}</td>`+
+      ['ini','fin','gdp','cons','conc','yuca'].map(k=>{
+        const step=(k==='gdp'||k==='cons')?'0.01':'1';
+        const cls=k==='yuca'?'border-yuca-200':'border-brand-200';
+        return `<td class="py-1 px-1"><input data-i="${i}" data-k="${k}" type="number" step="${step}" value="${p[k]}" class="num-in w-16 rounded-lg border ${cls} px-2 py-1 text-sm font-600 text-right"></td>`;
+      }).join('');
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',e=>{S.phases[+e.target.dataset.i][e.target.dataset.k]=parseFloat(e.target.value)||0;calc();}));
+}
+function bindGlobals(){
+  ['lechones','mIni','mCre','mAdu','yRend','yMS','pConc','pYuca','pVenta','pLechon'].forEach(id=>$(id).addEventListener('input',e=>{S[id]=parseFloat(e.target.value)||0;calc();}));
+}
+
+function calc(){
+  const mCre=S.mCre/100,mAdu=S.mAdu/100;
+  const D=[],E=[];D[0]=S.lechones;E[0]=r0(D[0]*mCre);
+  D[1]=D[0]-E[0];E[1]=r0(D[1]*mCre);
+  D[2]=D[1]-E[1];E[2]=r0(D[2]*mCre);
+  D[3]=D[2]-E[2];E[3]=r0(D[3]*mAdu);
+  const venta=D[3]-E[3];
+  const rows=S.phases.map((p,i)=>{
+    const dias=r0((p.fin-p.ini)/(p.gdp||1));
+    const concDia=p.cons*(p.conc/100), yucaDia=p.cons*(p.yuca/100);
+    const alimFase=p.cons*dias, ca=alimFase>0?p.fin/alimFase:0, anim=D[i];
+    const concTotal=concDia*anim*dias, yucaTotal=anim*yucaDia*dias;
+    return {name:p.name,dias,concDia,yucaDia,alimFase,ca,anim,concTotal,yucaTotal};
+  });
+  const diasT=rows.reduce((a,b)=>a+b.dias,0);
+  const alimT=rows.reduce((a,b)=>a+b.alimFase,0);
+  const concT=rows.reduce((a,b)=>a+b.concTotal,0);
+  const yucaT=rows.reduce((a,b)=>a+b.yucaTotal,0);
+  const caT=diasT>0?alimT/diasT:0;
+  const msKgHa=S.yRend*(S.yMS/100), area=msKgHa>0?yucaT/msKgHa:0;
+  const yucaFresca=S.yMS>0?yucaT/(S.yMS/100):0;
+  renderKPIs({venta,concT,yucaT,caT,area});
+  renderHerd(D,E,venta);
+  renderFeed(rows,{diasT,alimT,concT,yucaT,caT},venta);
+  renderYuca({yucaT,msKgHa,area,yucaFresca});
+  renderProd(venta);renderCons();renderSan();
+}
+
+function renderKPIs(x){
+  const costoConc=x.concT*S.pConc;
+  const yucaFresca=S.yMS>0?x.yucaT/(S.yMS/100):0;
+  const costoYuca=yucaFresca*S.pYuca;
+  const costoLech=S.lechones*S.pLechon, sanAnual=sanTotals().total;
+  const ingreso=x.venta*90*S.pVenta;
+  const margen=ingreso-costoConc-costoYuca-costoLech-sanAnual;
+  const data=[
+    {t:'Cerdos a venta',v:fmt(x.venta,0),s:'cabezas / a\u00f1o',c:'kpi'},
+    {t:'Concentrado total',v:fmt(x.concT,0),s:'kg / ciclo',c:'kpi2'},
+    {t:'Yuca (base seca)',v:fmt(x.yucaT,0),s:'kg / ciclo',c:'kpi3'},
+    {t:'Margen estimado',v:usd(margen),s:'ingreso \u2212 costos',c:'kpi4'}
+  ];
+  $('kpis').innerHTML=data.map(k=>`<div class="${k.c} rounded-2xl p-4 text-white shadow-lg fade-up"><p class="text-[11px] font-600 opacity-80 uppercase tracking-wide">${k.t}</p><p class="text-2xl sm:text-3xl font-800 mt-1 leading-none">${k.v}</p><p class="text-[11px] opacity-80 mt-1">${k.s}</p></div>`).join('');
+}
+function renderHerd(D,E,venta){
+  const names=['Iniciador','Crecimiento I','Crecimiento II','Engorde I / Finalizaci\u00f3n'];
+  let h='';D.forEach((d,i)=>{h+=`<tr class="border-b border-brand-50"><td class="py-1.5 pr-2 font-600 text-brand-800">${names[i]}</td><td class="py-1.5 px-2 text-right">${fmt(d,0)}</td><td class="py-1.5 px-2 text-right text-clay-600">${fmt(E[i],0)}</td><td class="py-1.5 px-2 text-right font-600">${fmt(d-E[i],0)}</td></tr>`;});
+  h+=`<tr class="bg-brand-50/60 font-700"><td class="py-2 pr-2">Cerdos de engorde (venta)</td><td></td><td></td><td class="py-2 px-2 text-right text-brand-700">${fmt(venta,0)}</td></tr>`;
+  $('herdBody').innerHTML=h;
+}
+function renderFeed(rows,T,venta){
+  $('feedBody').innerHTML=rows.map(r=>`<tr class="border-b border-brand-50"><td class="py-1.5 pr-2 font-600 text-brand-800">${r.name}</td><td class="py-1.5 px-2 text-right">${fmt(r.dias,0)}</td><td class="py-1.5 px-2 text-right">${fmt(r.concDia,2)}</td><td class="py-1.5 px-2 text-right">${fmt(r.yucaDia,2)}</td><td class="py-1.5 px-2 text-right">${fmt(r.alimFase,2)}</td><td class="py-1.5 px-2 text-right">${fmt(r.ca,2)}</td><td class="py-1.5 px-2 text-right">${fmt(r.anim,0)}</td><td class="py-1.5 px-2 text-right font-600 text-brand-700">${fmt(r.concTotal,0)}</td><td class="py-1.5 px-2 text-right font-600 text-yuca-600">${fmt(r.yucaTotal,0)}</td></tr>`).join('');
+  $('feedFoot').innerHTML=`<tr class="border-t-2 border-brand-200 bg-brand-50/60"><td class="py-2 pr-2">TOTAL (15 a 90 kg)</td><td class="py-2 px-2 text-right">${fmt(T.diasT,0)}</td><td></td><td></td><td class="py-2 px-2 text-right">${fmt(T.alimT,2)}</td><td class="py-2 px-2 text-right">${fmt(T.caT,2)}</td><td></td><td class="py-2 px-2 text-right text-brand-700">${fmt(T.concT,0)}</td><td class="py-2 px-2 text-right text-yuca-600">${fmt(T.yucaT,0)}</td></tr>`;
+  const concPorCerdo=venta>0?T.concT/venta:0, yucaPorCerdo=venta>0?T.yucaT/venta:0;
+  $('feedCards').innerHTML=[
+    {t:'Alimento / cerdo',v:fmt(T.alimT,1)+' kg',c:'text-brand-700'},
+    {t:'Conc. / cerdo vendido',v:fmt(concPorCerdo,1)+' kg',c:'text-brand-700'},
+    {t:'Yuca MS / cerdo vendido',v:fmt(yucaPorCerdo,1)+' kg',c:'text-yuca-600'},
+    {t:'Costo del concentrado',v:usd(T.concT*S.pConc),c:'text-clay-600'}
+  ].map(k=>`<div class="rounded-xl bg-brand-50 border border-brand-100 p-3"><p class="text-[11px] font-600 text-brand-500 uppercase">${k.t}</p><p class="text-lg font-800 ${k.c} mt-0.5">${k.v}</p></div>`).join('');
+}
+function renderYuca(y){
+  $('yucaCards').innerHTML=[
+    {t:'Yuca requerida (MS)',v:fmt(y.yucaT,0)+' kg',c:'text-yuca-600'},
+    {t:'Yuca fresca equivalente',v:fmt(y.yucaFresca,0)+' kg',c:'text-yuca-600'},
+    {t:'MS producida por ha',v:fmt(y.msKgHa,0)+' kg/ha',c:'text-brand-700'},
+    {t:'\u00c1rea a sembrar',v:fmt(y.area,3)+' ha',c:'text-brand-700'}
+  ].map(k=>`<div class="rounded-xl bg-yuca-50 border border-yuca-100 p-3"><p class="text-[11px] font-600 text-yuca-600 uppercase">${k.t}</p><p class="text-lg font-800 ${k.c} mt-0.5">${k.v}</p></div>`).join('');
+}
+function renderProd(venta){let h='';for(let y=1;y<=5;y++){h+=`<tr class="border-b border-brand-50"><td class="py-1.5 pr-2 font-600">A\u00f1o ${y}</td><td class="py-1.5 px-2 text-right">${fmt(venta,0)}</td><td class="py-1.5 px-2 text-right">90</td><td class="py-1.5 px-2 text-right font-600">${fmt(venta*90,0)}</td></tr>`;}$('prodBody').innerHTML=h;}
+function renderCons(){const n=S.lechones;const data=[{m:'Piso de cemento',r:1},{m:'Cama profunda',r:2}];$('consBody').innerHTML=data.map(d=>{const req=d.r*n+(d.r*n*0.125);return `<tr class="border-b border-brand-50"><td class="py-1.5 font-600 text-brand-800">${d.m}</td><td class="py-1.5 text-right">${d.r}</td><td class="py-1.5 text-right">${fmt(n,0)}</td><td class="py-1.5 text-right font-700 text-brand-700">${fmt(req,2)}</td></tr>`;}).join('');}
+function sanTotals(){const n=S.lechones;const rows=SAN.map(t=>{const cant=n*t.dosis,frasco=cant/t.div,total=frasco*t.pu;return {...t,cant,frasco,total};});const prev=rows.reduce((a,b)=>a+b.total,0);const curativo=prev*0.2;return {rows,prev,curativo,total:prev+curativo};}
+function renderSan(){const {rows,prev,curativo,total}=sanTotals();$('sanBody').innerHTML=rows.map(r=>`<tr class="border-b border-brand-50"><td class="py-1 font-600">${r.name}</td><td class="py-1 text-right">${fmt(r.cant,0)}</td><td class="py-1 text-right">${fmt(r.frasco,2)}</td><td class="py-1 text-right">${usd(r.pu)}</td><td class="py-1 text-right font-600">${usd(r.total)}</td></tr>`).join('');$('sanFoot').innerHTML=`<tr class="border-t border-brand-100"><td colspan="4" class="py-1 text-right">Preventivo</td><td class="py-1 text-right">${usd(prev)}</td></tr><tr><td colspan="4" class="py-1 text-right text-brand-500">Curativo (20%)</td><td class="py-1 text-right text-brand-500">${usd(curativo)}</td></tr><tr class="bg-brand-50/60"><td colspan="4" class="py-1.5 text-right text-brand-800">TOTAL AÑO</td><td class="py-1.5 text-right text-brand-700">${usd(total)}</td></tr>`;}
+
+function syncGlobalInputs(){['lechones','mIni','mCre','mAdu','yRend','yMS','pConc','pYuca','pVenta','pLechon'].forEach(id=>$(id).value=S[id]);}
+$('btnReset').addEventListener('click',()=>{S=JSON.parse(JSON.stringify(DEF));syncGlobalInputs();buildPhaseInputs();calc();});
+$('btnPrint').addEventListener('click',()=>window.print());
+buildPhaseInputs();bindGlobals();calc();
+</script>
+</body>
+</html>

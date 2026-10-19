@@ -1,0 +1,293 @@
+﻿<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aves Ponedoras - Calculadora Técnica y Productiva</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], display: ['Outfit', 'sans-serif'] } } }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .glass-card { background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-input { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.14); color: #f8fafc; }
+    .glass-input:focus { border-color: #f59e0b; outline: none; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25); }
+  </style>
+</head>
+<body class="h-full text-slate-100 font-sans antialiased bg-slate-950" x-data="ponedorasStore()" x-cloak>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- HEADER MODULE BANNER -->
+    <div class="glass-card rounded-2xl p-5 border-l-4 border-amber-500 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-display text-white flex items-center gap-2">
+          🐔 Avicultura: Gallinas Ponedoras (Sin Pastoreo)
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">Mov Aves.xlsx</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Calculadora técnica dinámica basada en la auditoría del modelo de postura confinado</p>
+      </div>
+      <a href="../../index.html" target="_top" class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2 self-start md:self-auto">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Volver al Portal Principal
+      </a>
+    </div>
+
+    <!-- TOP KPI STRIP -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Gallinas Efectivas</span>
+        <div class="text-base sm:text-lg font-bold text-amber-400 mt-0.5" x-text="formatNumber(gallinasEfectivas, 0) + ' aves'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Cartones / Semana</span>
+        <div class="text-base sm:text-lg font-bold text-yellow-300 mt-0.5" x-text="formatNumber(cartonesSemana, 1) + ' cart/sem'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Cartones / Ciclo</span>
+        <div class="text-base sm:text-lg font-bold text-emerald-400 mt-0.5" x-text="formatNumber(cartonesCiclo, 0) + ' cartones'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Sacos Concentrado</span>
+        <div class="text-base sm:text-lg font-bold text-orange-400 mt-0.5" x-text="formatNumber(sacosConcentrado, 1) + ' sacos'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Área Galpón</span>
+        <div class="text-base sm:text-lg font-bold text-sky-400 mt-0.5" x-text="formatNumber(areaGalponM2, 1) + ' m²'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Cortinas Perimetrales</span>
+        <div class="text-base sm:text-lg font-bold text-slate-200 mt-0.5" x-text="formatNumber(cortinasMetros, 1) + ' m'"></div>
+      </div>
+    </div>
+
+    <!-- MAIN INPUTS & IMPLEMENTS GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- PARÁMETROS DEL LOTE Y RENDIMIENTO -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+          🥚 1. Parámetros Biológicos y de Postura
+        </h2>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">N° Gallinas Iniciales</label>
+            <input type="number" min="0" x-model.number="numero_gallinas" class="w-full glass-input rounded-lg p-2 font-bold text-amber-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Semanas del Ciclo</label>
+            <input type="number" min="1" max="100" x-model.number="semanas_ciclo" class="w-full glass-input rounded-lg p-2 font-bold text-white">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Consumo Diario (g/ave/día)</label>
+            <input type="number" step="1" min="0" x-model.number="consumo_diario_g" class="w-full glass-input rounded-lg p-2 font-bold text-yellow-300">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Tasa de Postura (%)</label>
+            <input type="number" step="1" min="0" max="100" x-model.number="tasa_postura_pct" class="w-full glass-input rounded-lg p-2 font-bold text-emerald-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Mortalidad Estimada (%)</label>
+            <input type="number" step="0.5" min="0" max="100" x-model.number="mortalidad_pct" class="w-full glass-input rounded-lg p-2 font-bold text-rose-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Densidad Galpón (aves/m²)</label>
+            <input type="number" step="0.5" min="1" x-model.number="densidad_galpon" class="w-full glass-input rounded-lg p-2 font-bold text-sky-400">
+          </div>
+        </div>
+      </div>
+
+      <!-- IMPLEMENTOS Y REQUERIMIENTOS DE INFRAESTRUCTURA -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+          🏗️ 2. Infraestructura e Implementos Requeridos
+        </h2>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block mb-0.5">Bebederos (1 galón):</span>
+            <span class="text-base font-bold text-amber-300 font-mono" x-text="formatNumber(bebederosCant, 1) + ' pzas'"></span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Ratio: 1 bebedero / 40 aves</span>
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block mb-0.5">Comederos (Cilíndricos):</span>
+            <span class="text-base font-bold text-yellow-300 font-mono" x-text="formatNumber(comederosCant, 1) + ' pzas'"></span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Ratio: 1 comedero / 80 aves</span>
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block mb-0.5">Nidales (0.3×0.3×0.3m):</span>
+            <span class="text-base font-bold text-emerald-400 font-mono" x-text="formatNumber(nidalesCant, 0) + ' unids'"></span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Ratio: 1 nidal / 5 aves</span>
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block mb-0.5">Perímetro Cortina:</span>
+            <span class="text-base font-bold text-sky-400 font-mono" x-text="formatNumber(cortinasMetros, 1) + ' m'"></span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Fórmula: √(Área) × 4 lados</span>
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-slate-900/80 rounded-xl border border-slate-800 space-y-1.5 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Total Concentrado Consumido:</span>
+            <span class="font-bold text-amber-300 font-mono" x-text="formatNumber(consumoConcentradoKg, 0) + ' kg'"></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Total Huevos Producidos / Ciclo:</span>
+            <span class="font-bold text-yellow-300 font-mono" x-text="formatNumber(huevosTotalesCiclo, 0) + ' unidades'"></span>
+          </div>
+          <div class="flex justify-between border-t border-slate-800 pt-1.5">
+            <span class="text-slate-400">Estimado Carne al Descarte:</span>
+            <span class="font-bold text-slate-200 font-mono" x-text="formatNumber(carneDescarteKg, 1) + ' kg'"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PROYECCIÓN MULTIANUAL A 5 AÑOS -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span>📈 Proyección Multianual Avícola (Años 1 al 5)</span>
+        <span class="text-xs text-amber-400 font-mono">Consolidado Ponedoras</span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[750px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Año</th>
+              <th class="py-2.5 px-2 text-center">Semanas Ciclo</th>
+              <th class="py-2.5 px-2 text-center text-amber-400">N° Gallinas Efectivas</th>
+              <th class="py-2.5 px-2 text-right text-yellow-300">Cartones / Sem</th>
+              <th class="py-2.5 px-2 text-right text-emerald-400">Cartones / Ciclo</th>
+              <th class="py-2.5 px-2 text-right text-orange-400">Concentrado (kg)</th>
+              <th class="py-2.5 px-3 text-right text-slate-200">Carne Descarte (kg)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="r in proyeccion5Anos()" :key="r.ano">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="'Año ' + r.ano"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-slate-300" x-text="r.semanas"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-amber-400 font-bold" x-text="formatNumber(r.gallinas_efectivas, 0)"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-yellow-300" x-text="formatNumber(r.cartones_sem, 1)"></td>
+                <td class="py-2.5 px-2 text-right font-mono font-bold text-emerald-400" x-text="formatNumber(r.cartones_ciclo, 0)"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-orange-300" x-text="formatNumber(r.concentrado_kg, 0) + ' kg'"></td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-200" x-text="formatNumber(r.carne_kg, 1) + ' kg'"></td>
+              </tr>
+            </template>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-900/90 font-bold border-t-2 border-slate-700 text-white">
+              <td class="py-3 px-3 uppercase text-slate-300">Total 5 Años</td>
+              <td class="py-3 px-2 text-center font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-center font-mono text-amber-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-yellow-300">—</td>
+              <td class="py-3 px-2 text-right font-mono text-emerald-400" x-text="formatNumber(totales5Anos.cartones_ciclo, 0) + ' cart'"></td>
+              <td class="py-3 px-2 text-right font-mono text-orange-300" x-text="formatNumber(totales5Anos.concentrado_kg, 0) + ' kg'"></td>
+              <td class="py-3 px-3 text-right font-mono text-slate-200" x-text="formatNumber(totales5Anos.carne_kg, 1) + ' kg'"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function ponedorasStore() {
+      return {
+        numero_gallinas: 300,
+        semanas_ciclo: 48,
+        consumo_diario_g: 115,
+        tasa_postura_pct: 80,
+        mortalidad_pct: 1,
+        densidad_galpon: 6,
+        peso_final_kg: 2.2,
+        peso_saco_kg: 40,
+
+        get isZero() { return (Number(this.numero_gallinas) || 0) <= 0; },
+        get gallinasEfectivas() {
+          let g = Number(this.numero_gallinas) || 0;
+          let m = Number(this.mortalidad_pct) || 0;
+          return this.isZero ? 0 : g - (g * (m / 100));
+        },
+        get consumoDiarioKgAve() { return (Number(this.consumo_diario_g) || 0) / 1000; },
+        get consumoConcentradoKg() {
+          let sem = Number(this.semanas_ciclo) || 0;
+          let g = Number(this.numero_gallinas) || 0;
+          return this.isZero ? 0 : sem * 7 * g * this.consumoDiarioKgAve;
+        },
+        get sacosConcentrado() {
+          let ps = Number(this.peso_saco_kg) || 40;
+          return this.consumoConcentradoKg / ps;
+        },
+
+        get cartonesSemana() {
+          let post = (Number(this.tasa_postura_pct) || 0) / 100;
+          return this.isZero ? 0 : (post * this.gallinasEfectivas * 7) / 30;
+        },
+        get cartonesCiclo() {
+          let sem = Number(this.semanas_ciclo) || 0;
+          return this.cartonesSemana * sem;
+        },
+        get huevosTotalesCiclo() { return this.cartonesCiclo * 30; },
+        get carneDescarteKg() {
+          let pf = Number(this.peso_final_kg) || 2.2;
+          return this.cartonesCiclo * pf;
+        },
+        get areaGalponM2() {
+          let d = Number(this.densidad_galpon) || 6;
+          return this.isZero ? 0 : (Number(this.numero_gallinas) || 0) / d;
+        },
+        get bebederosCant() { return this.isZero ? 0 : (Number(this.numero_gallinas) || 0) / 40; },
+        get comederosCant() { return this.isZero ? 0 : (Number(this.numero_gallinas) || 0) / 80; },
+        get nidalesCant() { return this.isZero ? 0 : (Number(this.numero_gallinas) || 0) / 5; },
+        get cortinasMetros() { return this.isZero ? 0 : Math.sqrt(this.areaGalponM2) * 4; },
+
+        proyeccion5Anos() {
+          let res = [];
+          for (let a = 1; a <= 5; a++) {
+            res.push({
+              ano: a,
+              semanas: this.semanas_ciclo,
+              gallinas_efectivas: this.gallinasEfectivas,
+              cartones_sem: this.cartonesSemana,
+              cartones_ciclo: this.cartonesCiclo,
+              concentrado_kg: this.consumoConcentradoKg,
+              carne_kg: this.carneDescarteKg
+            });
+          }
+          return res;
+        },
+        get totales5Anos() {
+          let list = this.proyeccion5Anos();
+          return {
+            cartones_ciclo: list.reduce((s, r) => s + r.cartones_ciclo, 0),
+            concentrado_kg: list.reduce((s, r) => s + r.concentrado_kg, 0),
+            carne_kg: list.reduce((s, r) => s + r.carne_kg, 0)
+          };
+        },
+
+        formatNumber(val, decimals = 2) {
+          if (val === undefined || val === null || isNaN(val)) return '0';
+          return Number(val).toLocaleString('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,283 @@
+﻿<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lombricultura y Humus de Lombriz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], display: ['Outfit', 'sans-serif'] } } }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .glass-card { background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-input { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.14); color: #f8fafc; }
+    .glass-input:focus { border-color: #a855f7; outline: none; box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25); }
+  </style>
+</head>
+<body class="h-full text-slate-100 font-sans antialiased bg-slate-950" x-data="lombriculturaStore()" x-cloak>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- HEADER MODULE BANNER -->
+    <div class="glass-card rounded-2xl p-5 border-l-4 border-purple-400 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-display text-white flex items-center gap-2">
+          🪱 Lombricultura: Humus Sólido y Biol Líquido
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">Lombricultura.xlsx</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Modelo de producción de biofertilizantes con lombriz roja californiana (canteros, sustrato orgánico, humus sólido, lixiviados e ingresos)</p>
+      </div>
+      <a href="../../index.html" target="_top" class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2 self-start md:self-auto">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Volver al Portal Principal
+      </a>
+    </div>
+
+    <!-- TOP KPI STRIP -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Superficie Lechos</span>
+        <div class="text-base sm:text-lg font-bold text-purple-400 mt-0.5" x-text="formatNumber(areaTotalLechosM2, 0) + ' m²'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Pie de Cría Inicial</span>
+        <div class="text-base sm:text-lg font-bold text-white mt-0.5" x-text="formatNumber(lombrizInicialKg, 0) + ' kg'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Humus Sólido / año</span>
+        <div class="text-base sm:text-lg font-bold text-emerald-400 mt-0.5" x-text="formatNumber(sacosHumusSolidoAnual, 0) + ' sacos'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Biol Líquido / año</span>
+        <div class="text-base sm:text-lg font-bold text-amber-400 mt-0.5" x-text="formatNumber(galonesBiolAnual, 0) + ' gal'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Sustrato Procesado</span>
+        <div class="text-base sm:text-lg font-bold text-slate-200 mt-0.5" x-text="formatNumber(sustratoTotalTonAnual, 1) + ' ton/año'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Ingresos Totales</span>
+        <div class="text-base sm:text-lg font-bold text-purple-300 mt-0.5" x-text="'$' + formatNumber(ingresosTotalesAnuales, 2)"></div>
+      </div>
+    </div>
+
+    <!-- MAIN INPUTS GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- INFRAESTRUCTURA DE LECHOS -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+          🏗️ 1. Infraestructura de Canteros y Sustrato
+        </h2>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Número de Canteros</label>
+            <input type="number" min="0" x-model.number="numero_lechos" class="w-full glass-input rounded-lg p-2 font-bold text-purple-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Largo Cantero (m)</label>
+            <input type="number" min="0" x-model.number="largo_lecho" class="w-full glass-input rounded-lg p-2 font-bold text-white">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Ancho Cantero (m)</label>
+            <input type="number" step="0.1" min="0" x-model.number="ancho_lecho" class="w-full glass-input rounded-lg p-2 font-bold text-white">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Ciclos al Año (120 días)</label>
+            <input type="number" min="1" max="4" x-model.number="ciclos_ano" class="w-full glass-input rounded-lg p-2 font-bold text-white">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Pie de Cría Inóculo (kg/m²)</label>
+            <input type="number" step="0.5" min="0" x-model.number="densidad_lombriz_m2" class="w-full glass-input rounded-lg p-2 font-bold text-emerald-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Dosis Sustrato (kg/m²/mes)</label>
+            <input type="number" step="5" min="0" x-model.number="sustrato_dosis_m2_mes" class="w-full glass-input rounded-lg p-2 font-bold text-amber-400">
+          </div>
+        </div>
+      </div>
+
+      <!-- COMERCIALIZACIÓN Y PRECIOS -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+          💰 2. Comercialización y Precios de Biofertilizantes
+        </h2>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Precio Saco Humus 40kg ($/saco)</label>
+            <input type="number" step="0.5" min="0" x-model.number="precio_saco_humus" class="w-full glass-input rounded-lg p-2 font-bold text-emerald-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Precio Galón Biol 3.785L ($/gal)</label>
+            <input type="number" step="0.5" min="0" x-model.number="precio_galon_biol" class="w-full glass-input rounded-lg p-2 font-bold text-amber-400">
+          </div>
+          <div class="col-span-2">
+            <label class="text-slate-300 font-semibold block mb-1">Precio Pie de Cría Excedente ($/kg lombriz viva)</label>
+            <input type="number" step="1" min="0" x-model.number="precio_lombriz_kg" class="w-full glass-input rounded-lg p-2 font-bold text-purple-300">
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800 space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Ingreso Humus Sólido:</span>
+            <span class="font-bold text-emerald-300 font-mono" x-text="'$' + formatNumber(ingresosHumusSolidoAnual, 2)"></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Ingreso Biol Líquido:</span>
+            <span class="font-bold text-amber-300 font-mono" x-text="'$' + formatNumber(ingresosBiolLiquidoAnual, 2)"></span>
+          </div>
+          <div class="flex justify-between border-t border-slate-800 pt-1.5">
+            <span class="text-slate-400">Ingreso Excedente Lombriz:</span>
+            <span class="font-bold text-purple-300 font-mono" x-text="'$' + formatNumber(ingresosLombrizAnual, 2)"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PROYECCIÓN MULTIANUAL A 5 AÑOS -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span>📈 Proyección Multianual de Producción de Biofertilizantes (Años 1 al 5)</span>
+        <span class="text-xs text-purple-400 font-mono">Consolidado Lombricultura</span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[700px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Año</th>
+              <th class="py-2.5 px-2 text-center">Sustrato Procesado</th>
+              <th class="py-2.5 px-2 text-right">Humus Sólido (sacos 40kg)</th>
+              <th class="py-2.5 px-2 text-right">Humus Líquido (galones)</th>
+              <th class="py-2.5 px-2 text-right">Lombriz Viva (kg)</th>
+              <th class="py-2.5 px-2 text-right text-emerald-400">Ingresos Humus USD</th>
+              <th class="py-2.5 px-2 text-right text-amber-400">Ingresos Biol USD</th>
+              <th class="py-3 px-3 text-right text-purple-300">Ingresos Totales USD</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="r in proyeccion5Anos()" :key="r.ano">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="'Año ' + r.ano"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-slate-300" x-text="formatNumber(r.sustrato_ton, 1) + ' ton'"></td>
+                <td class="py-2.5 px-2 text-right font-mono font-bold text-emerald-400" x-text="formatNumber(r.sacos_humus, 0) + ' sacos'"></td>
+                <td class="py-2.5 px-2 text-right font-mono font-bold text-amber-400" x-text="formatNumber(r.galones_biol, 0) + ' gal'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-purple-300" x-text="formatNumber(r.lombriz_kg, 0) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-emerald-300" x-text="'$' + formatNumber(r.ing_humus, 2)"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-300" x-text="'$' + formatNumber(r.ing_biol, 2)"></td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-purple-300" x-text="'$' + formatNumber(r.ing_total, 2)"></td>
+              </tr>
+            </template>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-900/90 font-bold border-t-2 border-slate-700 text-white">
+              <td class="py-3 px-3 uppercase text-slate-300">Total 5 Años</td>
+              <td class="py-3 px-2 text-center font-mono text-slate-300" x-text="formatNumber(totales5Anos.sustrato_ton, 1) + ' ton'"></td>
+              <td class="py-3 px-2 text-right font-mono text-emerald-400" x-text="formatNumber(totales5Anos.sacos_humus, 0) + ' sacos'"></td>
+              <td class="py-3 px-2 text-right font-mono text-amber-400" x-text="formatNumber(totales5Anos.galones_biol, 0) + ' gal'"></td>
+              <td class="py-3 px-2 text-right font-mono text-purple-300" x-text="formatNumber(totales5Anos.lombriz_kg, 0) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-emerald-300" x-text="'$' + formatNumber(totales5Anos.ing_humus, 2)"></td>
+              <td class="py-3 px-2 text-right font-mono text-amber-300" x-text="'$' + formatNumber(totales5Anos.ing_biol, 2)"></td>
+              <td class="py-3 px-3 text-right font-mono text-purple-300 text-sm" x-text="'$' + formatNumber(totales5Anos.ing_total, 2)"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function lombriculturaStore() {
+      return {
+        numero_lechos: 4,
+        largo_lecho: 10,
+        ancho_lecho: 2,
+        densidad_lombriz_m2: 4.0,
+        sustrato_dosis_m2_mes: 30.0,
+        riego_lt_m2_sem: 10.0,
+        rendimiento_humus_pct: 60,
+        lixiviado_pct: 20,
+        ciclos_ano: 3,
+        precio_saco_humus: 10.00,
+        precio_galon_biol: 4.50,
+        precio_lombriz_kg: 15.00,
+
+        get areaLechoM2() { return (Number(this.largo_lecho) || 0) * (Number(this.ancho_lecho) || 0); },
+        get areaTotalLechosM2() { return this.areaLechoM2 * (Number(this.numero_lechos) || 0); },
+        get isZero() { return (Number(this.numero_lechos) || 0) <= 0 || (Number(this.largo_lecho) || 0) <= 0 || (Number(this.ancho_lecho) || 0) <= 0; },
+        get lombrizInicialKg() { return this.isZero ? 0 : this.areaTotalLechosM2 * (Number(this.densidad_lombriz_m2) || 0); },
+        get sustratoCicloKg() { return this.isZero ? 0 : this.areaTotalLechosM2 * (Number(this.sustrato_dosis_m2_mes) || 0) * 4; },
+        get sustratoTotalTonAnual() { return (this.sustratoCicloKg * (Number(this.ciclos_ano) || 3)) / 1000; },
+        get humusSolidoCicloKg() { return this.sustratoCicloKg * ((Number(this.rendimiento_humus_pct) || 0) / 100); },
+        get humusSolidoAnualKg() { return this.humusSolidoCicloKg * (Number(this.ciclos_ano) || 3); },
+        get sacosHumusSolidoAnual() { return this.humusSolidoAnualKg / 40; },
+        get riegoAnualLitros() { return this.isZero ? 0 : this.areaTotalLechosM2 * (Number(this.riego_lt_m2_sem) || 0) * 52; },
+        get biolLiquidoAnualLt() { return this.riegoAnualLitros * ((Number(this.lixiviado_pct) || 0) / 100); },
+        get galonesBiolAnual() { return this.biolLiquidoAnualLt / 3.785; },
+        get lombrizExcedenteAnualKg() { return this.isZero ? 0 : this.areaTotalLechosM2 * 3.5; },
+
+        get ingresosHumusSolidoAnual() { return this.sacosHumusSolidoAnual * (Number(this.precio_saco_humus) || 0); },
+        get ingresosBiolLiquidoAnual() { return this.galonesBiolAnual * (Number(this.precio_galon_biol) || 0); },
+        get ingresosLombrizAnual() { return this.lombrizExcedenteAnualKg * (Number(this.precio_lombriz_kg) || 0); },
+        get ingresosTotalesAnuales() { return this.ingresosHumusSolidoAnual + this.ingresosBiolLiquidoAnual + this.ingresosLombrizAnual; },
+
+        proyeccion5Anos() {
+          let res = [];
+          for (let a = 1; a <= 5; a++) {
+            let mult = 1 + (a - 1) * 0.10; // 10% annual expansion
+            let sus_ton = this.sustratoTotalTonAnual * mult;
+            let sacos = Math.round(this.sacosHumusSolidoAnual * mult);
+            let gal = Math.round(this.galonesBiolAnual * mult);
+            let lom = Math.round(this.lombrizExcedenteAnualKg * mult);
+            let i_h = sacos * (Number(this.precio_saco_humus) || 0);
+            let i_b = gal * (Number(this.precio_galon_biol) || 0);
+            let i_l = lom * (Number(this.precio_lombriz_kg) || 0);
+            let i_tot = i_h + i_b + i_l;
+            res.push({
+              ano: a,
+              sustrato_ton: this.isZero ? 0 : sus_ton,
+              sacos_humus: this.isZero ? 0 : sacos,
+              galones_biol: this.isZero ? 0 : gal,
+              lombriz_kg: this.isZero ? 0 : lom,
+              ing_humus: this.isZero ? 0 : i_h,
+              ing_biol: this.isZero ? 0 : i_b,
+              ing_total: this.isZero ? 0 : i_tot
+            });
+          }
+          return res;
+        },
+        get totales5Anos() {
+          let list = this.proyeccion5Anos();
+          return {
+            sustrato_ton: list.reduce((s, r) => s + r.sustrato_ton, 0),
+            sacos_humus: list.reduce((s, r) => s + r.sacos_humus, 0),
+            galones_biol: list.reduce((s, r) => s + r.galones_biol, 0),
+            lombriz_kg: list.reduce((s, r) => s + r.lombriz_kg, 0),
+            ing_humus: list.reduce((s, r) => s + r.ing_humus, 0),
+            ing_biol: list.reduce((s, r) => s + r.ing_biol, 0),
+            ing_total: list.reduce((s, r) => s + r.ing_total, 0)
+          };
+        },
+
+        formatNumber(val, decimals = 2) {
+          if (val === undefined || val === null || isNaN(val)) return '0';
+          return Number(val).toLocaleString('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+

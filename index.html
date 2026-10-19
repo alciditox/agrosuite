@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgroSuite 360° · Planificación Agropecuaria</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#166534" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="hub.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- ===== Sidebar ===== -->
+    <aside class="side" id="side">
+      <div class="side__brand">
+        <h1 id="brandHome" style="cursor:pointer">🌱 AgroSuite 360°</h1>
+        <p>Planificación integral para 33 sistemas pecuarios, agroecológicos y de ciclo cerrado</p>
+      </div>
+      <div class="side__search">
+        <input id="search" type="search" placeholder="Buscar módulo o especie…" autocomplete="off" />
+      </div>
+      <nav class="side__list scroll-thin" id="navlist"></nav>
+      <div class="side__foot">100% Privado y Offline · Datos almacenados localmente en tu navegador.</div>
+    </aside>
+
+    <!-- ===== Main ===== -->
+    <main class="main">
+      <header class="top">
+        <button class="iconbtn" id="toggle" title="Mostrar / ocultar menú" aria-label="Menú">☰</button>
+        <div class="top__title" id="topTitle">
+          Panel de calculadoras
+          <small>Selecciona un módulo o analiza el consolidado de tu finca</small>
+        </div>
+
+        <div class="top__spacer"></div>
+
+        <!-- Barra de Gestión Multi-Predio y Respaldo -->
+        <div class="top__actions">
+          <div class="farm-bar">
+            <span class="farm-lbl">🏡 Predio:</span>
+            <select id="farmSelect" class="farm-sel" title="Seleccionar Finca o Hacienda Activa"></select>
+            <button id="btnAddFarm" class="topbtn" title="Añadir nueva finca">+ Finca</button>
+          </div>
+          <button id="btnBackup" class="topbtn" title="Descargar copia de seguridad en JSON">💾 Respaldo</button>
+          <button id="btnRestore" class="topbtn" title="Restaurar copia de seguridad">📂 Restaurar</button>
+          <input type="file" id="fileRestore" accept=".json" style="display:none" />
+          <button id="btnPrintDossier" class="topbtn topbtn--accent" title="Imprimir informe técnico formal">📄 Dossier</button>
+          <a class="linkbtn hidden" id="openBtn" target="_blank" rel="noopener">Abrir en pestaña ↗</a>
+        </div>
+      </header>
+
+      <iframe class="frame hidden" id="frame" title="Calculadora"></iframe>
+
+      <section class="home" id="home">
+        <div class="home__hero">
+          <h2>AgroSuite 360° · Panel Central de Planificación</h2>
+          <p>Portal unificado para el dimensionamiento de hatos, balance forrajero con resiliencia climática, porcicultura, postura y engorde avícola, piscicultura, lombricultura y economía circular de ciclo cerrado.</p>
+          <div class="home__stats">
+            <div><b id="statTotal">33</b><span>Módulos productivos</span></div>
+            <div><b id="statGrupos">6</b><span>Sistemas agropecuarios</span></div>
+            <div><b>100%</b><span>Offline & PWA</span></div>
+          </div>
+        </div>
+
+        <!-- ===== Resumen global de indicadores forrajeros ===== -->
+        <section class="summary" id="summary">
+          <div class="summary__head">
+            <div>
+              <h3><span class="bar" style="background:#166534"></span>Resumen Global de Balance Forrajero & Carga Animal</h3>
+              <p class="summary__sub">Consolidación de pastoreo en Bovinos, Bufalinos y Pequeños Rumiantes con margen preventivo y simulación de resiliencia hídrica.</p>
+            </div>
+            
+            <div class="summary__head-right">
+              <!-- Selector de Escenario Climático -->
+              <label class="clima-box">
+                <span>🌦️ Escenario Climático</span>
+                <select id="climateSelect" class="clima-sel">
+                  <option value="normal">☀️ Clima Normal (100% forraje)</option>
+                  <option value="mild_drought">⛅ Sequía Leve (-15%)</option>
+                  <option value="mod_drought">🍂 Sequía Moderada (-30%)</option>
+                  <option value="sev_drought">🏜️ Sequía Severa (-45%)</option>
+                  <option value="wet_year">🌧️ Año Lluvioso (+20%)</option>
+                </select>
+              </label>
+
+              <!-- Margen de seguridad forrajero -->
+              <label class="margen">
+                <span>Margen de seguridad</span>
+                <span class="margen__field">
+                  <input id="margen" type="number" min="0" max="100" step="1" value="15" inputmode="numeric" />
+                  <em>%</em>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Controles y Filtro de Ámbito -->
+          <div class="sum__controls" id="sumControls"></div>
+
+          <!-- Paneles Gráficos Interactivos (Fase 1) -->
+          <div class="charts-grid">
+            <div class="chart-card">
+              <h4>Tacómetro de Capacidad & Margen</h4>
+              <div id="chartGauge" class="chart-box"></div>
+            </div>
+            <div class="chart-card">
+              <h4>Oferta vs. Demanda Forrajera (UA)</h4>
+              <div id="chartBars" class="chart-box"></div>
+            </div>
+          </div>
+
+          <!-- KPIs Consolidados -->
+          <div class="sum__kpis" id="sumKpis"></div>
+
+          <!-- Diagnóstico Zootécnico & Agronómico Experto (Fase 2) -->
+          <div class="audit-card">
+            <h4>💡 Dictamen Zootécnico & Recomendaciones Agronómicas en Tiempo Real</h4>
+            <div id="expertAudit" class="audit-list"></div>
+          </div>
+
+          <!-- Tabla Desplegable de Detalle -->
+          <div id="sumTable"></div>
+        </section>
+
+        <!-- Grilla de Tarjetas por Categoría -->
+        <div id="cats"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Scripts del Ecosistema -->
+  <script src="modules/shared/charts.js"></script>
+  <script src="modules/shared/advisor.js"></script>
+  <script src="modules/shared/farms.js"></script>
+  <script src="hub.js"></script>
+
+  <!-- Registro de Service Worker PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch((err) => console.log('SW reg error:', err));
+      });
+    }
+  </script>
+</body>
+</html>

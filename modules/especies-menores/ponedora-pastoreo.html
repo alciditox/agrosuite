@@ -1,0 +1,364 @@
+﻿<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avicultura: Gallinas Ponedoras a Pastoreo + Forraje</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], display: ['Outfit', 'sans-serif'] } } }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .glass-card { background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-input { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.14); color: #f8fafc; }
+    .glass-input:focus { border-color: #10b981; outline: none; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25); }
+  </style>
+</head>
+<body class="h-full text-slate-100 font-sans antialiased bg-slate-950" x-data="pastoreoStore()" x-cloak>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- HEADER MODULE BANNER -->
+    <div class="glass-card rounded-2xl p-5 border-l-4 border-emerald-500 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-display text-white flex items-center gap-2">
+          🌿 Avicultura: Gallinas Ponedoras a Pastoreo + Forraje
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">Mov Aves_2.xlsx</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Calculadora técnica de ponedoras comerciales en pastoreo con suplementación de forraje verde seco (Sup_Forraje_1)</p>
+      </div>
+      <a href="../../index.html" target="_top" class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2 self-start md:self-auto">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Volver al Portal Principal
+      </a>
+    </div>
+
+    <!-- TOP KPI STRIP -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Gallinas Efectivas</span>
+        <div class="text-base sm:text-lg font-bold text-emerald-400 mt-0.5" x-text="formatNumber(gallinasEfectivas, 0) + ' aves'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Cartones / Sem</span>
+        <div class="text-base sm:text-lg font-bold text-yellow-300 mt-0.5" x-text="formatNumber(cartonesSemana, 1) + ' cart/sem'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Cartones / Ciclo</span>
+        <div class="text-base sm:text-lg font-bold text-emerald-300 mt-0.5" x-text="formatNumber(cartonesCiclo, 0) + ' cartones'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Forraje MS Anual</span>
+        <div class="text-base sm:text-lg font-bold text-amber-300 mt-0.5" x-text="formatNumber(forrajeMsKg, 0) + ' kg MS'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Sacos Concentrado (40kg)</span>
+        <div class="text-base sm:text-lg font-bold text-orange-400 mt-0.5" x-text="formatNumber(sacosConcentrado, 1) + ' sacos'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Área Forraje</span>
+        <div class="text-base sm:text-lg font-bold text-sky-400 mt-0.5" x-text="formatNumber(areaForrajeHa, 4) + ' ha'"></div>
+      </div>
+    </div>
+
+    <!-- MAIN INPUTS GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- PARÁMETROS DEL PLANTEL -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+          🌿 1. Parámetros del Plantel a Pastoreo
+        </h2>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">N° Gallinas Iniciales</label>
+            <input type="number" min="0" x-model.number="numero_gallinas" class="w-full glass-input rounded-lg p-2 font-bold text-emerald-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Semanas del Ciclo</label>
+            <input type="number" min="1" max="100" x-model.number="semanas_ciclo" class="w-full glass-input rounded-lg p-2 font-bold text-white">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Consumo Diario (g/ave/día)</label>
+            <input type="number" step="1" min="0" x-model.number="consumo_diario_g" class="w-full glass-input rounded-lg p-2 font-bold text-yellow-300">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Tasa de Postura (%)</label>
+            <input type="number" step="1" min="0" max="100" x-model.number="tasa_postura_pct" class="w-full glass-input rounded-lg p-2 font-bold text-emerald-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Mortalidad Estimada (%)</label>
+            <input type="number" step="0.5" min="0" max="100" x-model.number="mortalidad_pct" class="w-full glass-input rounded-lg p-2 font-bold text-rose-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Densidad Pastoreo (m²/ave)</label>
+            <input type="number" step="0.5" min="1" x-model.number="densidad_pastoreo_m2" class="w-full glass-input rounded-lg p-2 font-bold text-sky-400">
+          </div>
+        </div>
+      </div>
+
+      <!-- DESGLOSE DE SUPERFICIES Y ALIMENTO -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+          🌾 2. Superficies Requeridas y Suplementación
+        </h2>
+
+        <div class="p-3.5 bg-slate-900/80 rounded-xl border border-slate-800 space-y-1.5 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Consumo Concentrado Balanceado:</span>
+            <span class="font-bold text-orange-400 font-mono" x-text="formatNumber(consumoConcentradoKg, 0) + ' kg'"></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Suministro de Forraje Verde (MS):</span>
+            <span class="font-bold text-amber-300 font-mono" x-text="formatNumber(forrajeMsKg, 0) + ' kg MS'"></span>
+          </div>
+          <div class="flex justify-between border-t border-slate-800 pt-1.5">
+            <span class="text-slate-400">Superficie de Galpón (6 aves/m²):</span>
+            <span class="font-bold text-white font-mono" x-text="formatNumber(areaGalponM2, 1) + ' m²'"></span>
+          </div>
+          <div class="flex justify-between border-t border-slate-800 pt-1.5">
+            <span class="text-slate-400">Superficie de Pastoreo Requerida:</span>
+            <span class="font-bold text-sky-400 font-mono" x-text="formatNumber(areaPastoreoHa, 3) + ' ha'"></span>
+          </div>
+          <div class="flex justify-between border-t border-slate-800 pt-1.5">
+            <span class="text-slate-400">Superficie a Sembrar de Forraje:</span>
+            <span class="font-bold text-emerald-400 font-mono" x-text="formatNumber(areaForrajeHa, 4) + ' ha'"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TABLA SUPERFICIE DE CULTIVOS FORRAJEROS Sup_Forraje_1 (FILAS 8 A 13 EXCEL) -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span class="flex items-center gap-2">🌱 Tabla de Cultivos Forrajeros (<code class="text-emerald-400 text-xs">Sup_Forraje_1</code>) — Excel Filas 8-13</span>
+        <span class="text-xs text-emerald-300 font-mono" x-text="'Consumo MS Total: ' + formatNumber(forrajeMsKg, 1) + ' kg'"></span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[850px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Forraje / Especie</th>
+              <th class="py-2.5 px-2 text-right text-slate-300">Verde (kg/ha)</th>
+              <th class="py-2.5 px-2 text-right text-emerald-400">% Hojas</th>
+              <th class="py-2.5 px-2 text-right text-sky-400">N° Cortes</th>
+              <th class="py-2.5 px-2 text-right text-yellow-300">MS (%)</th>
+              <th class="py-2.5 px-2 text-right text-amber-300">MS / Corte (kg)</th>
+              <th class="py-2.5 px-2 text-right text-amber-400">MS / Año (kg)</th>
+              <th class="py-2.5 px-2 text-right text-purple-300">% Uso</th>
+              <th class="py-2.5 px-3 text-right text-emerald-300 font-bold">Sup a Sembrar (ha)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="(c, idx) in cultivosForraje" :key="c.nombre">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="c.nombre"></td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.kg_ha" class="w-24 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-slate-200">
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.pct_hojas" class="w-16 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-emerald-400">
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.cortes" class="w-14 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-sky-400">
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.pct_ms" class="w-16 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-yellow-300">
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-300 font-bold" x-text="formatNumber(tablaForraje[idx].ms_corte_kg, 1) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-400 font-bold" x-text="formatNumber(tablaForraje[idx].ms_ano_kg, 0) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.pct_uso" class="w-16 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-purple-300">
+                </td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-400 text-sm" x-text="formatNumber(tablaForraje[idx].sup_sembrar_ha, 4) + ' ha'"></td>
+              </tr>
+            </template>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-900/90 font-bold border-t-2 border-slate-700 text-white">
+              <td class="py-3 px-3 uppercase text-slate-300">Total General</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-amber-300" x-text="formatNumber(totalesForraje.ms_corte, 1) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-amber-400" x-text="formatNumber(totalesForraje.ms_ano, 0) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-purple-300" x-text="formatNumber(totalesForraje.pct_uso, 0) + '%'"></td>
+              <td class="py-3 px-3 text-right font-mono text-emerald-400 text-base" x-text="formatNumber(totalesForraje.sup_total_ha, 4) + ' ha'"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- PROYECCIÓN MULTIANUAL A 5 AÑOS -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span>📈 Proyección Multianual Ponedoras a Pastoreo (Años 1 al 5)</span>
+        <span class="text-xs text-emerald-400 font-mono">Consolidado Pastoreo</span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[750px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Año</th>
+              <th class="py-2.5 px-2 text-center text-emerald-400">Gallinas Efectivas</th>
+              <th class="py-2.5 px-2 text-right text-yellow-300">Cartones / Sem</th>
+              <th class="py-2.5 px-2 text-right text-emerald-300">Cartones / Ciclo</th>
+              <th class="py-2.5 px-2 text-right text-amber-300">Forraje MS (kg)</th>
+              <th class="py-2.5 px-2 text-right text-orange-400">Concentrado (kg)</th>
+              <th class="py-2.5 px-3 text-right text-slate-200">Carne Descarte (kg)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="r in proyeccion5Anos()" :key="r.ano">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="'Año ' + r.ano"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-emerald-400 font-bold" x-text="formatNumber(r.gallinas_efectivas, 0)"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-yellow-300" x-text="formatNumber(r.cartones_sem, 1)"></td>
+                <td class="py-2.5 px-2 text-right font-mono font-bold text-emerald-300" x-text="formatNumber(r.cartones_ciclo, 0)"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-300" x-text="formatNumber(r.forraje_kg, 0) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-orange-300" x-text="formatNumber(r.concentrado_kg, 0) + ' kg'"></td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-200" x-text="formatNumber(r.carne_kg, 1) + ' kg'"></td>
+              </tr>
+            </template>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-900/90 font-bold border-t-2 border-slate-700 text-white">
+              <td class="py-3 px-3 uppercase text-slate-300">Total 5 Años</td>
+              <td class="py-3 px-2 text-center font-mono text-emerald-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-yellow-300">—</td>
+              <td class="py-3 px-2 text-right font-mono text-emerald-300" x-text="formatNumber(totales5Anos.cartones_ciclo, 0) + ' cart'"></td>
+              <td class="py-3 px-2 text-right font-mono text-amber-300" x-text="formatNumber(totales5Anos.forraje_kg, 0) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-orange-300" x-text="formatNumber(totales5Anos.concentrado_kg, 0) + ' kg'"></td>
+              <td class="py-3 px-3 text-right font-mono text-slate-200" x-text="formatNumber(totales5Anos.carne_kg, 1) + ' kg'"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function pastoreoStore() {
+      return {
+        numero_gallinas: 300,
+        semanas_ciclo: 48,
+        consumo_diario_g: 115,
+        tasa_postura_pct: 70,
+        mortalidad_pct: 5,
+        densidad_pastoreo_m2: 5,
+        peso_final_kg: 2.2,
+
+        // TABLA SUPERFICIE CULTIVOS FORRAJEROS Sup_Forraje_1 (Filas 8-13 Excel)
+        cultivosForraje: [
+          { nombre: 'Ramio', kg_ha: 120000, pct_hojas: 40, cortes: 8, pct_ms: 22, pct_uso: 100 },
+          { nombre: 'Botón de Oro', kg_ha: 90000, pct_hojas: 50, cortes: 8, pct_ms: 14, pct_uso: 0 },
+          { nombre: 'Morera', kg_ha: 100000, pct_hojas: 60, cortes: 6, pct_ms: 16, pct_uso: 0 },
+          { nombre: 'Naranjillo (Nacedora)', kg_ha: 53000, pct_hojas: 70, cortes: 4, pct_ms: 18, pct_uso: 0 }
+        ],
+
+        get gallinasEfectivas() {
+          let g = Number(this.numero_gallinas) || 0;
+          let m = Number(this.mortalidad_pct) || 0;
+          return g - (g * (m / 100));
+        },
+        get forrajeMsKg() { return 2898 * (this.gallinasEfectivas / 285); },
+        get consumoConcentradoKg() { return 6955.2 * (this.gallinasEfectivas / 285); },
+        get sacosConcentrado() { return this.consumoConcentradoKg / 40; },
+
+        get cartonesSemana() {
+          let post = (Number(this.tasa_postura_pct) || 70) / 100;
+          return (post * this.gallinasEfectivas * 7) / 30;
+        },
+        get cartonesCiclo() {
+          return this.cartonesSemana * (Number(this.semanas_ciclo) || 48);
+        },
+        get carneDescarteKg() { return this.gallinasEfectivas * (Number(this.peso_final_kg) || 2.2); },
+
+        get areaGalponM2() { return this.gallinasEfectivas / 6; },
+        get areaPastoreoHa() { return (this.gallinasEfectivas * (Number(this.densidad_pastoreo_m2) || 5)) / 10000; },
+
+        get tablaForraje() {
+          let total_ms_req = this.forrajeMsKg;
+          return this.cultivosForraje.map(c => {
+            let kg_ha = Number(c.kg_ha) || 0;
+            let pct_hojas = (Number(c.pct_hojas) || 0) / 100;
+            let cortes = Number(c.cortes) || 1;
+            let pct_ms = (Number(c.pct_ms) || 0) / 100;
+            let pct_uso = (Number(c.pct_uso) || 0) / 100;
+
+            let ms_corte_kg = ((kg_ha * pct_hojas) / cortes) * pct_ms;
+            let ms_ano_kg = ms_corte_kg * cortes;
+            let sup_sembrar_ha = ms_ano_kg > 0 ? (total_ms_req / ms_ano_kg) * pct_uso : 0;
+
+            return {
+              ms_corte_kg: ms_corte_kg,
+              ms_ano_kg: ms_ano_kg,
+              sup_sembrar_ha: sup_sembrar_ha
+            };
+          });
+        },
+
+        get totalesForraje() {
+          let list = this.tablaForraje;
+          return {
+            ms_corte: list.reduce((s, r) => s + r.ms_corte_kg, 0),
+            ms_ano: list.reduce((s, r) => s + r.ms_ano_kg, 0),
+            pct_uso: this.cultivosForraje.reduce((s, c) => s + (Number(c.pct_uso) || 0), 0),
+            sup_total_ha: list.reduce((s, r) => s + r.sup_sembrar_ha, 0)
+          };
+        },
+
+        get areaForrajeHa() {
+          return this.totalesForraje.sup_total_ha;
+        },
+
+        proyeccion5Anos() {
+          let res = [];
+          for (let a = 1; a <= 5; a++) {
+            res.push({
+              ano: a,
+              gallinas_efectivas: this.gallinasEfectivas,
+              cartones_sem: this.cartonesSemana,
+              cartones_ciclo: this.cartonesCiclo,
+              forraje_kg: this.forrajeMsKg,
+              concentrado_kg: this.consumoConcentradoKg,
+              carne_kg: this.carneDescarteKg
+            });
+          }
+          return res;
+        },
+        get totales5Anos() {
+          let list = this.proyeccion5Anos();
+          return {
+            cartones_ciclo: list.reduce((s, r) => s + r.cartones_ciclo, 0),
+            forraje_kg: list.reduce((s, r) => s + r.forraje_kg, 0),
+            concentrado_kg: list.reduce((s, r) => s + r.concentrado_kg, 0),
+            carne_kg: list.reduce((s, r) => s + r.carne_kg, 0)
+          };
+        },
+
+        formatNumber(val, decimals = 2) {
+          if (val === undefined || val === null || isNaN(val)) return '0';
+          return Number(val).toLocaleString('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+

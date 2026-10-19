@@ -1,0 +1,281 @@
+﻿<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Piscicultura en Laguna - Simulador Técnico-Económico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], display: ['Outfit', 'sans-serif'] } } }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .glass-card { background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-input { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.14); color: #f8fafc; }
+    .glass-input:focus { border-color: #38bdf8; outline: none; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25); }
+  </style>
+</head>
+<body class="h-full text-slate-100 font-sans antialiased bg-slate-950" x-data="pisciculturaLagunaStore()" x-cloak>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- HEADER MODULE BANNER -->
+    <div class="glass-card rounded-2xl p-5 border-l-4 border-sky-400 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-display text-white flex items-center gap-2">
+          🐟 Piscicultura en Laguna / Estanque
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 font-mono">Pisicultura laguna.xlsx</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Modelo de cultivo semi-intensivo en estanques de tierra (biomasa, alimento FCA, mortalidad y rentabilidad a 5 años)</p>
+      </div>
+      <a href="../../index.html" target="_top" class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2 self-start md:self-auto">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Volver al Portal Principal
+      </a>
+    </div>
+
+    <!-- TOP KPI STRIP -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Espejo de Agua</span>
+        <div class="text-base sm:text-lg font-bold text-sky-400 mt-0.5" x-text="formatNumber(espejoAgua, 0) + ' m²'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Alevines / Ciclo</span>
+        <div class="text-base sm:text-lg font-bold text-white mt-0.5" x-text="formatNumber(totalAlevinesCiclo, 0)"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Biomasa / Año</span>
+        <div class="text-base sm:text-lg font-bold text-emerald-400 mt-0.5" x-text="formatNumber(biomasaAnualKg, 0) + ' kg'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Alimento Total / Año</span>
+        <div class="text-base sm:text-lg font-bold text-amber-400 mt-0.5" x-text="formatNumber(alimentoAnualKg, 0) + ' kg'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Ingresos Anuales</span>
+        <div class="text-base sm:text-lg font-bold text-emerald-300 mt-0.5" x-text="'$' + formatNumber(ingresosAnuales, 2)"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Utilidad Neta / Año</span>
+        <div class="text-base sm:text-lg font-bold mt-0.5" :class="utilidadNetaAnual >= 0 ? 'text-sky-400' : 'text-rose-400'" x-text="'$' + formatNumber(utilidadNetaAnual, 2)"></div>
+      </div>
+    </div>
+
+    <!-- MAIN INPUTS GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- DIMENSIONES Y BIOMETRÍA -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+          📐 1. Dimensiones de Estanque y Biometría
+        </h2>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Ancho Laguna (m)</label>
+            <input type="number" min="0" x-model.number="ancho_laguna" class="w-full glass-input rounded-lg p-2 font-bold text-sky-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Largo Laguna (m)</label>
+            <input type="number" min="0" x-model.number="largo_laguna" class="w-full glass-input rounded-lg p-2 font-bold text-sky-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Densidad (alevinos/m²)</label>
+            <input type="number" step="0.5" min="0" x-model.number="densidad_siembra" class="w-full glass-input rounded-lg p-2 font-bold text-white">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Ciclos al Año</label>
+            <input type="number" min="1" max="4" x-model.number="ciclos_ano" class="w-full glass-input rounded-lg p-2 font-bold text-white">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Peso Cosecha (g)</label>
+            <input type="number" step="10" min="0" x-model.number="peso_cosecha_g" class="w-full glass-input rounded-lg p-2 font-bold text-white">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Mortalidad (%)</label>
+            <input type="number" min="0" max="100" x-model.number="mortalidad_pct" class="w-full glass-input rounded-lg p-2 font-bold text-rose-400">
+          </div>
+          <div class="col-span-2">
+            <label class="text-slate-300 font-semibold block mb-1">Factor Conversión Alimenticia (FCA - kg alimento/kg pez)</label>
+            <input type="number" step="0.1" min="1" x-model.number="fca" class="w-full glass-input rounded-lg p-2 font-bold text-amber-400">
+          </div>
+        </div>
+      </div>
+
+      <!-- PRECIOS Y COSTOS -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+          💵 2. Precios e Indicadores Financieros
+        </h2>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Precio Alevín (USD/unidad)</label>
+            <input type="number" step="0.01" min="0" x-model.number="precio_alevin" class="w-full glass-input rounded-lg p-2 font-bold text-white">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Precio Alimento (USD/kg)</label>
+            <input type="number" step="0.05" min="0" x-model.number="precio_alimento_kg" class="w-full glass-input rounded-lg p-2 font-bold text-white">
+          </div>
+          <div class="col-span-2">
+            <label class="text-slate-300 font-semibold block mb-1">Precio Venta Pez Cosechado en Pie (USD/kg)</label>
+            <input type="number" step="0.1" min="0" x-model.number="precio_pez_kg" class="w-full glass-input rounded-lg p-2 font-bold text-emerald-400 text-sm">
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800 space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Costo Anual Alevines:</span>
+            <span class="font-bold text-slate-200 font-mono" x-text="'$' + formatNumber(costoAlevinesAnual, 2)"></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Costo Anual Alimento:</span>
+            <span class="font-bold text-slate-200 font-mono" x-text="'$' + formatNumber(costoAlimentoAnual, 2)"></span>
+          </div>
+          <div class="flex justify-between border-t border-slate-800 pt-1.5">
+            <span class="text-slate-400">Margen Bruto Estimado:</span>
+            <span class="font-bold text-sky-400 font-mono" x-text="formatNumber(margenPct, 1) + '%'"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PROYECCIÓN INTERANUAL A 5 AÑOS -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span>📈 Proyección Multianual de Producción Piscícola en Laguna (Años 1 al 5)</span>
+        <span class="text-xs text-sky-400 font-mono">Consolidado Finca</span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[700px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Año</th>
+              <th class="py-2.5 px-2 text-center">Alevines Sembrados</th>
+              <th class="py-2.5 px-2 text-center">Peces Cosechados</th>
+              <th class="py-2.5 px-2 text-right">Biomasa (kg/año)</th>
+              <th class="py-2.5 px-2 text-right">Alimento (kg/año)</th>
+              <th class="py-2.5 px-2 text-right text-emerald-400">Ingresos USD</th>
+              <th class="py-2.5 px-2 text-right text-rose-400">Costos USD</th>
+              <th class="py-3 px-3 text-right text-sky-300">Utilidad Neta USD</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="r in proyeccion5Anos()" :key="r.ano">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="'Año ' + r.ano"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-slate-300" x-text="formatNumber(r.alevines, 0)"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-sky-300" x-text="formatNumber(r.peces, 0)"></td>
+                <td class="py-2.5 px-2 text-right font-mono font-bold text-emerald-400" x-text="formatNumber(r.biomasa_kg, 0) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-400" x-text="formatNumber(r.alimento_kg, 0) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-emerald-300 font-bold" x-text="'$' + formatNumber(r.ingresos, 2)"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-rose-300" x-text="'$' + formatNumber(r.costos, 2)"></td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-sky-300" x-text="'$' + formatNumber(r.utilidad, 2)"></td>
+              </tr>
+            </template>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-900/90 font-bold border-t-2 border-slate-700 text-white">
+              <td class="py-3 px-3 uppercase text-slate-300">Total 5 Años</td>
+              <td class="py-3 px-2 text-center font-mono text-slate-300" x-text="formatNumber(totales5Anos.alevines, 0)"></td>
+              <td class="py-3 px-2 text-center font-mono text-sky-300" x-text="formatNumber(totales5Anos.peces, 0)"></td>
+              <td class="py-3 px-2 text-right font-mono text-emerald-400" x-text="formatNumber(totales5Anos.biomasa_kg, 0) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-amber-400" x-text="formatNumber(totales5Anos.alimento_kg, 0) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-emerald-300" x-text="'$' + formatNumber(totales5Anos.ingresos, 2)"></td>
+              <td class="py-3 px-2 text-right font-mono text-rose-300" x-text="'$' + formatNumber(totales5Anos.costos, 2)"></td>
+              <td class="py-3 px-3 text-right font-mono text-sky-300 text-sm" x-text="'$' + formatNumber(totales5Anos.utilidad, 2)"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function pisciculturaLagunaStore() {
+      return {
+        ancho_laguna: 30,
+        largo_laguna: 100,
+        densidad_siembra: 2.5,
+        peso_cosecha_g: 450,
+        mortalidad_pct: 7,
+        fca: 1.6,
+        ciclos_ano: 2,
+        precio_alevin: 0.10,
+        precio_alimento_kg: 0.85,
+        precio_pez_kg: 3.50,
+
+        get espejoAgua() { return (Number(this.ancho_laguna) || 0) * (Number(this.largo_laguna) || 0); },
+        get isZero() { return this.espejoAgua <= 0 || (Number(this.densidad_siembra) || 0) <= 0 || (Number(this.peso_cosecha_g) || 0) <= 0; },
+        get totalAlevinesCiclo() { return this.isZero ? 0 : this.espejoAgua * (Number(this.densidad_siembra) || 0); },
+        get pecesCosechadosCiclo() { return this.isZero ? 0 : this.totalAlevinesCiclo * (1 - ((Number(this.mortalidad_pct) || 0) / 100)); },
+        get biomasaCicloKg() { return this.isZero ? 0 : this.pecesCosechadosCiclo * ((Number(this.peso_cosecha_g) || 0) / 1000); },
+        get biomasaAnualKg() { return this.biomasaCicloKg * (Number(this.ciclos_ano) || 1); },
+        get alimentoAnualKg() { return this.biomasaAnualKg * (Number(this.fca) || 0); },
+        get costoAlevinesAnual() { return this.totalAlevinesCiclo * (Number(this.ciclos_ano) || 1) * (Number(this.precio_alevin) || 0); },
+        get costoAlimentoAnual() { return this.alimentoAnualKg * (Number(this.precio_alimento_kg) || 0); },
+        get costosTotalesAnuales() { return this.costoAlevinesAnual + this.costoAlimentoAnual; },
+        get ingresosAnuales() { return this.biomasaAnualKg * (Number(this.precio_pez_kg) || 0); },
+        get utilidadNetaAnual() { return this.ingresosAnuales - this.costosTotalesAnuales; },
+        get margenPct() { return this.ingresosAnuales > 0 ? (this.utilidadNetaAnual / this.ingresosAnuales) * 100 : 0; },
+
+        proyeccion5Anos() {
+          let res = [];
+          for (let a = 1; a <= 5; a++) {
+            let mult = 1 + (a - 1) * 0.05;
+            let alev = Math.round(this.totalAlevinesCiclo * (Number(this.ciclos_ano) || 1) * mult);
+            let peces = Math.round(this.pecesCosechadosCiclo * (Number(this.ciclos_ano) || 1) * mult);
+            let bio = this.biomasaAnualKg * mult;
+            let alim = bio * (Number(this.fca) || 0);
+            let ing = bio * (Number(this.precio_pez_kg) || 0);
+            let c_alev = alev * (Number(this.precio_alevin) || 0);
+            let c_alim = alim * (Number(this.precio_alimento_kg) || 0);
+            let c_tot = c_alev + c_alim;
+            let util = ing - c_tot;
+            res.push({
+              ano: a,
+              alevines: this.isZero ? 0 : alev,
+              peces: this.isZero ? 0 : peces,
+              biomasa_kg: this.isZero ? 0 : bio,
+              alimento_kg: this.isZero ? 0 : alim,
+              ingresos: this.isZero ? 0 : ing,
+              costos: this.isZero ? 0 : c_tot,
+              utilidad: this.isZero ? 0 : util
+            });
+          }
+          return res;
+        },
+        get totales5Anos() {
+          let list = this.proyeccion5Anos();
+          return {
+            alevines: list.reduce((s, r) => s + r.alevines, 0),
+            peces: list.reduce((s, r) => s + r.peces, 0),
+            biomasa_kg: list.reduce((s, r) => s + r.biomasa_kg, 0),
+            alimento_kg: list.reduce((s, r) => s + r.alimento_kg, 0),
+            ingresos: list.reduce((s, r) => s + r.ingresos, 0),
+            costos: list.reduce((s, r) => s + r.costos, 0),
+            utilidad: list.reduce((s, r) => s + r.utilidad, 0)
+          };
+        },
+
+        formatNumber(val, decimals = 2) {
+          if (val === undefined || val === null || isNaN(val)) return '0';
+          return Number(val).toLocaleString('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+

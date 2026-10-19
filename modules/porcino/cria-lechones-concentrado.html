@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Porcina Concentrado · Cría de Lechones</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{
+  brand:{50:'#f3f8f0',100:'#e3efdb',200:'#c7dfb9',300:'#a0c88b',400:'#79ad5e',500:'#5a9140',600:'#447230',700:'#375a28',800:'#2e4824',900:'#283c20'},
+  sky:{50:'#eef6fb',100:'#d4e9f4',400:'#4f9fcb',500:'#3685b4',600:'#296a92'},
+  rose:{400:'#e07a9a',500:'#cf5c80',600:'#b24466'},
+  clay:{400:'#d98a5b',500:'#c56f3f',600:'#a9572e'}},
+  fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--ring:#5a9140;}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(160deg,#f6faf3 0%,#eef4ea 100%);}
+  .glass{backdrop-filter:blur(10px);background:rgba(255,255,255,.74);}
+  .card{border:1px solid rgba(68,114,48,.12);box-shadow:0 1px 2px rgba(40,60,32,.04),0 8px 24px -12px rgba(40,60,32,.18);}
+  .num-in{transition:all .15s ease;}
+  .num-in:focus{outline:none;border-color:var(--ring);box-shadow:0 0 0 3px rgba(90,145,64,.18);}
+  .fade-up{animation:fu .5s ease both}@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  table{border-collapse:separate;border-spacing:0}.tbl th,.tbl td{white-space:nowrap}
+  .kpi{background:linear-gradient(135deg,#447230,#5a9140)}.kpi2{background:linear-gradient(135deg,#2e4824,#447230)}
+  .kpi3{background:linear-gradient(135deg,#296a92,#4f9fcb)}.kpi4{background:linear-gradient(135deg,#b24466,#e07a9a)}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-webkit-appearance:textfield;-moz-appearance:textfield;appearance:textfield}
+  .pill{font-size:11px;font-weight:600;letter-spacing:.03em}
+  .flow{position:relative}
+  .flow .arr{color:#a0c88b}
+  ::-webkit-scrollbar{height:9px;width:9px}::-webkit-scrollbar-thumb{background:#c7dfb9;border-radius:9px}
+  @media print{.no-print{display:none!important}body{background:#fff}}
+</style>
+</head>
+<body class="text-brand-900">
+<header class="glass sticky top-0 z-30 border-b border-brand-200/60">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="h-11 w-11 rounded-2xl kpi flex items-center justify-center text-white text-2xl shadow-lg">🐷</div>
+      <div>
+        <h1 class="text-base sm:text-lg font-800 leading-tight">Calculadora Porcina Integral</h1>
+        <p class="text-[11px] sm:text-xs text-brand-600 font-medium">Cría de lechones · alimentación con concentrado</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 no-print">
+      <button id="btnReset" class="text-xs font-semibold px-3 py-2 rounded-xl border border-brand-200 hover:bg-brand-50 transition">↻ Restablecer</button>
+      <button id="btnPrint" class="text-xs font-semibold px-3 py-2 rounded-xl text-white kpi hover:brightness-110 transition shadow">🖨 Imprimir / PDF</button>
+    </div>
+  </div>
+</header>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" id="kpis"></section>
+  <section id="rampup"></section>
+  <div class="grid lg:grid-cols-12 gap-6">
+    <div class="lg:col-span-4 space-y-6" id="leftcol"></div>
+    <div class="lg:col-span-8 space-y-6" id="rightcol"></div>
+  </div>
+  <footer class="text-center text-[11px] text-brand-500 pt-2 pb-6">Basada en el modelo <b>Movimiento Porcino Lechones (concentrado)</b>. Operación de cría: el producto principal son <b>lechones a batería (≈13 kg)</b> alimentados con concentrado. Ajuste los índices y rendimientos a su realidad.</footer>
+</main>
+<script>
+const DEF={
+  madresIni:5, madres:5, partosAno:2.2, lechonesPorParto:10, relacionHM:10,
+  mortLechones:20, mortBateria:4, mortCrecimiento:3, mortEngorde:1,
+  descarteHembras:10, descarteVerracos:25, cerdosRetenidos:1,
+  pesoLechon:13, pesoMadre:130, pesoVerraco:230,
+  precioConc:0.65, precioLechon:45, precioDescarte:1.60,
+  feed:[
+    {g:'Madres secas',            cat:'madre',   dias:21, cons:2},
+    {g:'Madres gestantes I',      cat:'madre',   dias:85, cons:2},
+    {g:'Madres gestantes II',     cat:'madre',   dias:20, cons:3},
+    {g:'Madres gestantes III',    cat:'madre',   dias:10, cons:2},
+    {g:'Madres lactantes',        cat:'madre',   dias:30, cons:5.5},
+    {g:'Verracos',                cat:'verraco', dias:365,cons:2},
+    {g:'Reemplazo (hembras)',     cat:'reempl',  dias:90, cons:2},
+    {g:'Lechones lactantes (0-14 d)',  cat:'nacidos', dias:14, cons:0},
+    {g:'Lechones lactantes (15-30 d)', cat:'destete', dias:14, cons:0.5},
+    {g:'Lechones bater\u00eda (venta)',   cat:'bateria', dias:12, cons:1},
+    {g:'Retenido destete II',     cat:'retenido',dias:10, cons:1},
+    {g:'Retenido destete III',    cat:'retenido',dias:10, cons:1.5},
+    {g:'Retenido destete IV',     cat:'retenido',dias:10, cons:1.5},
+    {g:'Crecimiento I',           cat:'retenido',dias:10, cons:2},
+    {g:'Crecimiento II',          cat:'retenido',dias:10, cons:2},
+    {g:'Crecimiento III',         cat:'retenido',dias:10, cons:2},
+    {g:'Crecimiento IV',          cat:'retenido',dias:10, cons:2},
+    {g:'Engorde I',               cat:'retenido',dias:10, cons:3},
+    {g:'Engorde II',              cat:'retenido',dias:10, cons:3},
+    {g:'Engorde III',             cat:'retenido',dias:10, cons:3},
+    {g:'Engorde IV',              cat:'retenido',dias:8,  cons:2.5}
+  ]
+};
+const SAN=[
+  {n:'Pseudorrabia (SR)', dl:2, dv:2, dm:3, div:50, pu:11},
+  {n:'Neumon\u00eda (NE)',    dl:2, dv:2, dm:2, div:50, pu:11},
+  {n:'Peste Porcina (PP)',dl:1, dv:2, dm:2, div:50, pu:11},
+  {n:'Leptospira (LP)',   dl:0, dv:2, dm:2, div:50, pu:11},
+  {n:'Hierro',            dl:1, dv:0, dm:0, div:50, pu:8},
+  {n:'Desparasitante',    dl:2, dv:5, dm:4, div:100,pu:12},
+  {n:'Vitaminas AD3E',    dl:1, dv:3, dm:3, div:100,pu:15}
+];
+const CONS={diasJaula:40, espJaula:4, espHembra:2, espVerraco:8, espDestete:0.33, espEngorde:1, animCorralDest:10, animCorralEng:20, semBateria:6, semEngorde:12};
+// Perfil del ramp-up derivado de la simulaci\u00f3n mensual del Excel (MOV_RES/RES ALI/Prod):
+// fracci\u00f3n de cada m\u00e9trica en a\u00f1o 1 y a\u00f1o 2 respecto al r\u00e9gimen estabilizado (a\u00f1o 3-5),
+// medida con el hato por defecto (5 madres). El arranque es gradual porque el hato parte vac\u00edo
+// y la parici\u00f3n sube de 75% a 85%. A\u00f1o 1 escala con madres iniciales; a\u00f1o 2 = casi r\u00e9gimen.
+const RAMPFRAC={
+  madres:[1.0,1.0], verracos:[1.0,1.0], montas:[1.1538,1.0769], gestantes:[0.9091,1.0],
+  nacidos:[0.6909,1.0], destete:[0.6136,1.0], bateria:[0.5,1.0], crecim:[1.0,1.0],
+  engorde:[1.0,1.0], venta:[0.5,1.0], descM:[1.0,1.0], descV:[0,0],
+  conc:[0.904762,1.0], carne:[0.5532,1.0]
+};
+let S=JSON.parse(JSON.stringify(DEF));
+const $=id=>document.getElementById(id);
+const r0=n=>Math.round(n), up=n=>Math.ceil(n-1e-9);
+const fmt=(n,d=2)=>isFinite(n)?n.toLocaleString('es',{minimumFractionDigits:d,maximumFractionDigits:d}):'\u2013';
+const usd=n=>'$'+fmt(n,2);
+
+function herd(m){
+  const madres=(m===undefined)?S.madres:m;
+  const verracos=up(madres/S.relacionHM);
+  const partos=madres*S.partosAno;
+  const nacidos=partos*S.lechonesPorParto;
+  const destete=nacidos*(1-S.mortLechones/100);
+  const bateria=destete*(1-S.mortBateria/100);
+  // Cría de lechones: el producto vendido son los lechones a batería.
+  // Cerdos retenidos (crecimiento + engorde) = los pocos que la granja conserva.
+  const crecimiento=S.cerdosRetenidos;
+  const engorde=S.cerdosRetenidos;
+  const descMadres=Math.round(madres*S.descarteHembras/100);
+  const descVerracos=Math.round(verracos*S.descarteVerracos/100);
+  const reemplazo=descMadres;
+  const venta=Math.round(bateria);
+  const lechSem=up(destete/52);
+  return {madres,verracos,partos,nacidos,destete,bateria,crecimiento,engorde,descMadres,descVerracos,reemplazo,venta,lechSem};
+}
+function cnt(cat,H){
+  switch(cat){
+    case 'madre':return{n:H.madres,ciclos:S.partosAno};
+    case 'verraco':return{n:H.verracos,ciclos:1};
+    case 'reempl':return{n:H.reemplazo,ciclos:1};
+    case 'nacidos':return{n:r0(H.nacidos),ciclos:1};
+    case 'lactante':return{n:r0(H.destete),ciclos:1};
+    case 'destete':return{n:r0(H.destete),ciclos:1};
+    case 'bateria':return{n:r0(H.bateria),ciclos:1};
+    case 'retenido':return{n:S.cerdosRetenidos,ciclos:1};
+    case 'crecim':return{n:r0(H.crecimiento),ciclos:1};
+    case 'engorde':return{n:r0(H.engorde),ciclos:1};
+  }
+}
+function feedCalc(H){
+  let rows=[],tot=0;
+  S.feed.forEach((f,i)=>{
+    const c=cnt(f.cat,H);
+    const kgAn=f.dias*f.cons;
+    const kg=kgAn*c.n*c.ciclos;
+    tot+=kg;
+    rows.push({...f,i,n:c.n,ciclos:c.ciclos,kgAn,kg});
+  });
+  return {rows,tot};
+}
+function prodCalc(H){
+  const carneLechones=H.venta*S.pesoLechon;
+  const carneMadres=H.descMadres*S.pesoMadre;
+  const carneVerracos=H.descVerracos*S.pesoVerraco;
+  const carneTotal=carneLechones+carneMadres+carneVerracos;
+  return {carneLechones,carneMadres,carneVerracos,carneTotal};
+}
+function sanCalc(H){
+  const L=r0(H.nacidos),V=H.verracos,M=H.madres;
+  let rows=[],prev=0;
+  SAN.forEach(s=>{
+    const dosis=s.dl*L+s.dv*V+s.dm*M;
+    const frascos=dosis/s.div;
+    const total=frascos*s.pu;
+    prev+=total;
+    rows.push({...s,dosis,frascos,total});
+  });
+  const curativo=prev*0.2;
+  return {rows,prev,curativo,total:prev+curativo};
+}
+function consCalc(H){
+  const C=CONS;
+  const jaulasMat=S.madres*S.partosAno*C.diasJaula/365;
+  const aMat=C.espJaula*jaulasMat;
+  const aGest=(S.madres-jaulasMat)*C.espHembra;
+  const aVerr=C.espVerraco*H.verracos;
+  const corrDest=up(H.lechSem*C.semBateria/C.animCorralDest);
+  const aDest=(C.animCorralDest*corrDest)*C.espDestete;
+  const corrEng=up(H.lechSem*C.semEngorde/C.animCorralEng);
+  const aEng=(C.animCorralDest*corrEng)*C.espEngorde;
+  const subMat=aMat+aGest+aDest;
+  const aProd=subMat+aEng+aVerr;
+  const pasillos=aProd*0.3;
+  const totalArea=aProd+pasillos;
+  return {jaulasMat,aMat,aGest,aVerr,aDest,aEng,corrDest,corrEng,subMat,aProd,pasillos,totalArea};
+}
+function econ(H,F,P){
+  const costoConc=F.tot*S.precioConc;
+  const ingLechones=H.venta*S.precioLechon;
+  const ingDescarte=(H.descMadres*S.pesoMadre+H.descVerracos*S.pesoVerraco)*S.precioDescarte;
+  const ingresos=ingLechones+ingDescarte;
+  return {costoConc,ingLechones,ingDescarte,ingresos};
+}
+function computeAll(){
+  const H=herd(),F=feedCalc(H),P=prodCalc(H),Sa=sanCalc(H),Co=consCalc(H),E=econ(H,F,P);
+  return {H,F,P,Sa,Co,E};
+}
+// ---------- UI ----------
+function card(title,sub,body,extra=''){
+  return `<div class="card glass rounded-2xl p-4 sm:p-5 fade-up ${extra}">
+    <div class="flex items-baseline justify-between mb-3"><h2 class="text-sm font-800 tracking-tight">${title}</h2>${sub?`<span class="text-[11px] text-brand-500 font-medium">${sub}</span>`:''}</div>${body}</div>`;
+}
+function field(label,key,step='1',suf=''){
+  return `<label class="block"><span class="text-[11px] font-semibold text-brand-700">${label}</span>
+   <div class="relative mt-1"><input type="number" step="${step}" data-k="${key}" value="${S[key]}" class="num-in w-full rounded-xl border border-brand-200 bg-white/80 px-3 py-2 text-sm font-semibold text-brand-900 pr-10">
+   ${suf?`<span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-brand-400 font-semibold">${suf}</span>`:''}</div></label>`;
+}
+function renderKPIs(R){
+  const k=[
+    ['Lechones a venta / a\u00f1o',fmt(R.H.venta,0),'cabezas \u00b7 '+S.pesoLechon+' kg','kpi'],
+    ['Concentrado total',fmt(R.F.tot,0),'kg de alimento / a\u00f1o','kpi2'],
+    ['Carne producida',fmt(R.P.carneTotal,0),'kg en pie / a\u00f1o','kpi3'],
+    ['Ingreso bruto',usd(R.E.ingresos),'ventas totales / a\u00f1o','kpi4']
+  ];
+  $('kpis').innerHTML=k.map(x=>`<div class="${x[3]} rounded-2xl p-4 text-white shadow-lg fade-up">
+    <div class="text-[11px] font-semibold opacity-85">${x[0]}</div>
+    <div class="text-2xl sm:text-3xl font-800 mt-1 leading-none">${x[1]}</div>
+    <div class="text-[11px] opacity-80 mt-1">${x[2]}</div></div>`).join('');
+}
+function renderLeft(R){
+  const prod=card('\ud83d\udc0b Hato reproductor','\u00edndices',
+    `<div class="grid grid-cols-2 gap-3">${field('Madres iniciales (a\u00f1o 1)','madresIni')}${field('Madres estabilizadas','madres')}${field('Partos / madre / a\u00f1o','partosAno','0.1')}${field('Lechones / parto','lechonesPorParto','0.1')}${field('Rel. hembra:macho','relacionHM','1')}${field('Cerdos retenidos (crec+eng)','cerdosRetenidos','1')}${field('Descarte verracos','descarteVerracos','1','%')}${field('Descarte hembras','descarteHembras','1','%')}</div>`);
+  const mort=card('\u2620\ufe0f Mortalidad por etapa','% por fase',
+    `<div class="grid grid-cols-2 gap-3">${field('Lactancia (pre-destete)','mortLechones','0.5','%')}${field('Bater\u00eda / destete','mortBateria','0.5','%')}${field('Crecimiento','mortCrecimiento','0.5','%')}${field('Engorde','mortEngorde','0.5','%')}</div>`);
+  const pre=card('\u2696\ufe0f Pesos y precios','mercado',
+    `<div class="grid grid-cols-2 gap-3">${field('Peso venta lech\u00f3n','pesoLechon','1','kg')}${field('Peso descarte madre','pesoMadre','1','kg')}${field('Peso descarte verraco','pesoVerraco','1','kg')}${field('Precio concentrado','precioConc','0.01','$/kg')}${field('Precio lech\u00f3n','precioLechon','1','$/cab')}${field('Precio descarte','precioDescarte','0.01','$/kg')}</div>`);
+  $('leftcol').innerHTML=prod+mort+pre;
+}
+function rampModel(){
+  const mEst=S.madres, mIni=S.madresIni;
+  const Hs=herd(mEst), Fs=feedCalc(Hs), Ps=prodCalc(Hs);
+  // M\u00e9tricas en r\u00e9gimen estabilizado (a\u00f1o 3-5), 100% din\u00e1micas con todos los \u00edndices
+  const St={
+    madres:mEst, verracos:Hs.verracos, montas:Hs.partos/0.85, gestantes:Hs.partos,
+    nacidos:Hs.nacidos, destete:Hs.destete, bateria:Hs.bateria, crecim:Hs.crecimiento,
+    engorde:Hs.engorde, venta:Hs.venta, descM:Hs.descMadres, descV:Hs.descVerracos,
+    conc:Fs.tot, carne:Ps.carneTotal
+  };
+  // Escalador de a\u00f1o 1 seg\u00fan madres iniciales (relativo al patr\u00f3n por defecto mIni/mEst=0.5)
+  const k1=(mEst>0)?(mIni/mEst):0;
+  const keys=Object.keys(RAMPFRAC);
+  const yr=y=>{
+    const o={a:y};
+    keys.forEach(k=>{
+      let v;
+      if(y>=3) v=St[k];
+      else if(y===1) v=St[k]*RAMPFRAC[k][0]*k1;
+      else v=St[k]*RAMPFRAC[k][1];
+      o[k]=v;
+    });
+    return o;
+  };
+  return [yr(1),yr(2),yr(3),yr(4),yr(5)];
+}
+function renderRamp(){
+  const RAMP=rampModel();
+  const maxConc=Math.max(...RAMP.map(x=>x.conc))||1;
+  const maxVenta=Math.max(...RAMP.map(x=>x.venta))||1;
+  // mini-barras de evoluci\u00f3n
+  const bars=RAMP.map(x=>{
+    const hC=Math.round(x.conc/maxConc*100), hV=Math.round(x.venta/maxVenta*100);
+    return `<div class="flex-1 flex flex-col items-center gap-1">
+      <div class="flex items-end gap-1 h-28 w-full justify-center">
+        <div class="w-4 sm:w-5 rounded-t kpi2" style="height:${hC}%" title="Concentrado ${fmt(x.conc,0)} kg"></div>
+        <div class="w-4 sm:w-5 rounded-t kpi3" style="height:${hV}%" title="Lechones a venta ${fmt(x.venta,0)}"></div>
+      </div>
+      <div class="text-[10px] font-700 text-brand-700">A\u00f1o ${x.a}</div>
+      <div class="text-[9px] text-brand-400">${fmt(x.madres,0)} madres</div></div>`;
+  }).join('');
+  const legend=`<div class="flex items-center justify-center gap-4 mt-2 text-[10px] font-semibold">
+    <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded kpi2"></span>Concentrado (kg)</span>
+    <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded kpi3"></span>Lechones a venta</span></div>`;
+  const graph=`<div class="flex items-end gap-2 sm:gap-4">${bars}</div>${legend}`;
+  // tabla por a\u00f1o
+  const row=(l,key,d=0,fn=null)=>`<tr class="border-b border-brand-50 hover:bg-brand-50/40">
+    <td class="py-1.5 pl-2 pr-3 font-semibold text-brand-800 sticky left-0 bg-white/90">${l}</td>
+    ${RAMP.map(x=>`<td class="px-3 text-right tabular-nums">${fn?fn(x):fmt(x[key],d)}</td>`).join('')}</tr>`;
+  const tbl=`<div class="overflow-x-auto"><table class="tbl w-full text-xs">
+    <thead><tr class="text-[10px] uppercase tracking-wide text-brand-500 border-b-2 border-brand-200">
+      <th class="text-left pl-2 pb-2 sticky left-0 bg-white/90">Indicador anual</th>
+      ${RAMP.map(x=>`<th class="text-right px-3 ${x.a>=3?'text-brand-700':''}">A\u00f1o ${x.a}${x.a>=3?' \u00b7 reg.':''}</th>`).join('')}</tr></thead>
+    <tbody>
+      ${row('Madres (fin inventario)','madres')}
+      ${row('Verracos','verracos')}
+      ${row('Montas','montas')}
+      ${row('Gestantes / partos','gestantes')}
+      ${row('Lechones nacidos','nacidos')}
+      ${row('Lechones al destete','destete')}
+      ${row('Bater\u00eda (lechones)','bateria')}
+      ${row('Retenidos en crecimiento','crecim')}
+      ${row('Retenidos en engorde','engorde')}
+      <tr class="border-b border-brand-100 bg-sky-50/50"><td class="py-1.5 pl-2 font-800 sticky left-0 bg-sky-50/90">Lechones a venta</td>${RAMP.map(x=>`<td class="px-3 text-right font-800 text-sky-600">${fmt(x.venta,0)}</td>`).join('')}</tr>
+      ${row('Madres de descarte','descM')}
+      ${row('Verracos de descarte','descV')}
+      <tr class="border-b border-brand-100 bg-brand-50/50"><td class="py-1.5 pl-2 font-800 sticky left-0 bg-brand-50/90">Concentrado (kg)</td>${RAMP.map(x=>`<td class="px-3 text-right font-800 text-brand-700">${fmt(x.conc,0)}</td>`).join('')}</tr>
+      <tr class="bg-rose-50/40"><td class="py-1.5 pl-2 font-800 sticky left-0 bg-rose-50/80">Carne producida (kg)</td>${RAMP.map(x=>`<td class="px-3 text-right font-800 text-rose-600">${fmt(x.carne,0)}</td>`).join('')}</tr>
+    </tbody></table></div>`;
+  const note=`<p class="text-[10px] text-brand-400 mt-3 leading-relaxed">\u2699\ufe0f <b>Vista din\u00e1mica:</b> el a\u00f1o 1 usa las <b>madres iniciales</b>, el hato crece hasta las <b>madres estabilizadas</b> y queda en r\u00e9gimen del a\u00f1o 3 al 5. Los a\u00f1os 3-5 se recalculan con todos los \u00edndices editables; el perfil de arranque (a\u00f1o 1-2) sigue la forma de la <b>simulaci\u00f3n mensual del Excel</b> (MOV_RES/RES ALI/Prod), escalada a su hato. Con los valores por defecto (5 madres) reproduce exactamente las cifras originales del Excel.</p>`;
+  $('rampup').innerHTML=card('\ud83d\udcc8 Vista de ramp-up anual (A\u00f1o 1 \u2192 5)','din\u00e1mico \u00b7 '+fmt(S.madresIni,0)+' \u2192 '+fmt(S.madres,0)+' madres',
+    `<div class="grid lg:grid-cols-5 gap-5"><div class="lg:col-span-2">${graph}</div><div class="lg:col-span-3">${tbl}</div></div>${note}`);
+}
+function renderRight(R){
+  const H=R.H;
+  // ---- Flujo del hato ----
+  const chip=(lbl,val,sub,color)=>`<div class="rounded-xl border border-brand-100 bg-white/70 px-3 py-2 text-center min-w-[92px]">
+    <div class="text-[10px] font-semibold ${color}">${lbl}</div>
+    <div class="text-lg font-800 leading-none mt-0.5">${val}</div>
+    <div class="text-[9px] text-brand-400 mt-0.5">${sub}</div></div>`;
+  const arr=`<div class="arr text-xl font-800 px-0.5">\u2192</div>`;
+  const flow=`<div class="flow flex flex-wrap items-center gap-1.5">
+    ${chip('Madres',fmt(H.madres,0),'reproductoras','text-brand-600')}${arr}
+    ${chip('Partos',fmt(H.partos,0),S.partosAno+' /madre','text-brand-600')}${arr}
+    ${chip('Nacidos',fmt(H.nacidos,0),S.lechonesPorParto+' /parto','text-rose-500')}${arr}
+    ${chip('Destete',fmt(H.destete,0),'-'+S.mortLechones+'%','text-rose-500')}${arr}
+    ${chip('Bater\u00eda',fmt(H.bateria,0),'-'+S.mortBateria+'%','text-clay-500')}${arr}
+    ${chip('A VENTA',fmt(H.venta,0),'lechones a bater\u00eda','text-brand-700 font-800')}</div>
+    <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+      ${chip('Retenidos crec.',fmt(H.crecimiento,0),'-'+S.mortCrecimiento+'%','text-clay-500')}
+      ${chip('Retenidos eng.',fmt(H.engorde,0),'-'+S.mortEngorde+'%','text-sky-500')}
+      ${chip('Verracos',fmt(H.verracos,0),'rel. 1:'+S.relacionHM,'text-sky-600')}
+      ${chip('Reemplazo',fmt(H.reemplazo,0),'hembras/a\u00f1o','text-brand-600')}
+      ${chip('Descarte madres',fmt(H.descMadres,0),S.descarteHembras+'%','text-rose-600')}
+      ${chip('Descarte verracos',fmt(H.descVerracos,0),S.descarteVerracos+'%','text-rose-600')}</div>`;
+  const cFlow=card('\ud83d\udcca Flujo anual del hato','r\u00e9gimen estabilizado',`<div class="overflow-x-auto">${flow}</div>`);
+  // ---- Alimentaci\u00f3n ----
+  let fr=R.F.rows.map(x=>`<tr class="border-b border-brand-50 hover:bg-brand-50/40">
+    <td class="py-1.5 pl-2 pr-3 font-semibold text-brand-800">${x.g}</td>
+    <td class="px-2 text-right tabular-nums">${fmt(x.n,0)}</td>
+    <td class="px-1 text-center"><input type="number" step="1" data-fi="${x.i}" data-fp="dias" value="${x.dias}" class="num-in w-16 text-right rounded-lg border border-brand-200 bg-white px-1.5 py-1 text-xs font-semibold"></td>
+    <td class="px-1 text-center"><input type="number" step="0.1" data-fi="${x.i}" data-fp="cons" value="${x.cons}" class="num-in w-16 text-right rounded-lg border border-brand-200 bg-white px-1.5 py-1 text-xs font-semibold"></td>
+    <td class="px-2 text-right tabular-nums text-brand-500">${x.ciclos>1?fmt(x.ciclos,1):'1'}</td>
+    <td class="px-2 text-right tabular-nums font-700 text-brand-800">${fmt(x.kg,0)}</td></tr>`).join('');
+  const fTbl=card('\ud83c\udf3d Alimentaci\u00f3n (concentrado)','d\u00edas y consumo editables',
+    `<div class="overflow-x-auto"><table class="tbl w-full text-xs">
+      <thead><tr class="text-[10px] uppercase tracking-wide text-brand-500 border-b border-brand-200">
+        <th class="text-left pl-2 pb-2">Categor\u00eda</th><th class="text-right px-2">Animales</th><th class="text-center px-1">D\u00edas</th><th class="text-center px-1">kg/d\u00eda</th><th class="text-right px-2">Ciclos</th><th class="text-right px-2">kg/a\u00f1o</th></tr></thead>
+      <tbody>${fr}</tbody>
+      <tfoot><tr class="border-t-2 border-brand-300"><td class="py-2 pl-2 font-800">TOTAL CONCENTRADO</td><td colspan="4"></td><td class="px-2 text-right font-800 text-brand-700">${fmt(R.F.tot,0)} kg</td></tr></tfoot>
+    </table></div>`);
+  // ---- Producci\u00f3n de carne ----
+  const prow=(l,n,p,kg,c)=>`<tr class="border-b border-brand-50"><td class="py-1.5 pl-2 font-semibold text-brand-800">${l}</td><td class="px-2 text-right tabular-nums">${fmt(n,0)}</td><td class="px-2 text-right tabular-nums">${fmt(p,0)}</td><td class="px-2 text-right tabular-nums font-700 ${c}">${fmt(kg,0)}</td></tr>`;
+  const pTbl=card('\ud83e\udd69 Producci\u00f3n de carne','kg en pie / a\u00f1o',
+    `<div class="overflow-x-auto"><table class="tbl w-full text-xs">
+     <thead><tr class="text-[10px] uppercase tracking-wide text-brand-500 border-b border-brand-200"><th class="text-left pl-2 pb-2">Concepto</th><th class="text-right px-2">Cabezas</th><th class="text-right px-2">Peso (kg)</th><th class="text-right px-2">Carne (kg)</th></tr></thead>
+     <tbody>${prow('Lechones a venta (bater\u00eda)',H.venta,S.pesoLechon,R.P.carneLechones,'text-brand-800')}${prow('Madres de descarte',H.descMadres,S.pesoMadre,R.P.carneMadres,'text-clay-600')}${prow('Verracos de descarte',H.descVerracos,S.pesoVerraco,R.P.carneVerracos,'text-clay-600')}</tbody>
+     <tfoot><tr class="border-t-2 border-brand-300"><td class="py-2 pl-2 font-800">TOTAL CARNE</td><td colspan="2"></td><td class="px-2 text-right font-800 text-brand-700">${fmt(R.P.carneTotal,0)} kg</td></tr></tfoot></table></div>`);
+  // ---- Construcci\u00f3n ----
+  const corow=(l,v,u='m\u00b2')=>`<tr class="border-b border-brand-50"><td class="py-1.5 pl-2 font-semibold text-brand-800">${l}</td><td class="px-2 text-right tabular-nums font-700 text-brand-700">${fmt(v,2)} ${u}</td></tr>`;
+  const Co=R.Co;
+  const coTbl=card('\ud83c\udfd7\ufe0f Infraestructura requerida','\u00e1rea de instalaciones',
+    `<div class="overflow-x-auto"><table class="tbl w-full text-xs"><tbody>
+     ${corow('Maternidad ('+fmt(Co.jaulasMat,1)+' jaulas)',Co.aMat)}${corow('Gestaci\u00f3n (madres)',Co.aGest)}${corow('Destete / bater\u00eda ('+Co.corrDest+' corrales)',Co.aDest)}${corow('Crecimiento + engorde ('+Co.corrEng+' corrales)',Co.aEng)}${corow('Verracos',Co.aVerr)}
+     <tr class="border-b border-brand-100 bg-brand-50/40"><td class="py-1.5 pl-2 font-800">Subtotal productivo</td><td class="px-2 text-right font-800">${fmt(Co.aProd,2)} m\u00b2</td></tr>
+     ${corow('Pasillos y servicios (30%)',Co.pasillos)}</tbody>
+     <tfoot><tr class="border-t-2 border-brand-300"><td class="py-2 pl-2 font-800">\u00c1REA TOTAL</td><td class="px-2 text-right font-800 text-brand-700">${fmt(Co.totalArea,2)} m\u00b2</td></tr></tfoot></table></div>`);
+  // ---- Sanidad ----
+  let sr=R.Sa.rows.map(x=>`<tr class="border-b border-brand-50"><td class="py-1.5 pl-2 font-semibold text-brand-800">${x.n}</td><td class="px-2 text-right tabular-nums">${fmt(x.dosis,0)}</td><td class="px-2 text-right tabular-nums">${fmt(x.frascos,1)}</td><td class="px-2 text-right tabular-nums">${usd(x.pu)}</td><td class="px-2 text-right tabular-nums font-700 text-brand-700">${usd(x.total)}</td></tr>`).join('');
+  const saTbl=card('\ud83d\udc89 Programa sanitario','dosis y costo preventivo / a\u00f1o',
+    `<div class="overflow-x-auto"><table class="tbl w-full text-xs">
+     <thead><tr class="text-[10px] uppercase tracking-wide text-brand-500 border-b border-brand-200"><th class="text-left pl-2 pb-2">Tratamiento</th><th class="text-right px-2">Dosis</th><th class="text-right px-2">Frascos</th><th class="text-right px-2">P.U.</th><th class="text-right px-2">Total</th></tr></thead>
+     <tbody>${sr}</tbody>
+     <tfoot><tr class="border-t border-brand-200"><td class="py-1.5 pl-2 font-700">Preventivo</td><td colspan="3"></td><td class="px-2 text-right font-700">${usd(R.Sa.prev)}</td></tr>
+     <tr><td class="py-1 pl-2 text-brand-500">Curativo (20%)</td><td colspan="3"></td><td class="px-2 text-right text-brand-500">${usd(R.Sa.curativo)}</td></tr>
+     <tr class="border-t-2 border-brand-300"><td class="py-2 pl-2 font-800">TOTAL SANIDAD</td><td colspan="3"></td><td class="px-2 text-right font-800 text-brand-700">${usd(R.Sa.total)}</td></tr></tfoot></table></div>`);
+  // ---- Econom\u00eda ----
+  const erow=(l,v,c='text-brand-700')=>`<tr class="border-b border-brand-50"><td class="py-1.5 pl-2 font-semibold text-brand-800">${l}</td><td class="px-2 text-right tabular-nums font-700 ${c}">${usd(v)}</td></tr>`;
+  const E=R.E;
+  const eTbl=card('\ud83d\udcb0 Resumen econ\u00f3mico','referencial / a\u00f1o',
+    `<div class="overflow-x-auto"><table class="tbl w-full text-xs"><tbody>
+     ${erow('Ingreso por lechones',E.ingLechones)}${erow('Ingreso por descartes',E.ingDescarte)}
+     <tr class="border-b border-brand-100 bg-brand-50/40"><td class="py-1.5 pl-2 font-800">Ingreso bruto</td><td class="px-2 text-right font-800">${usd(E.ingresos)}</td></tr>
+     ${erow('Costo de concentrado',E.costoConc,'text-clay-600')}
+     ${erow('Costo sanidad',R.Sa.total,'text-clay-600')}</tbody>
+     <tfoot><tr class="border-t-2 border-brand-300"><td class="py-2 pl-2 font-800">Margen (ingreso \u2212 alimento \u2212 sanidad)</td><td class="px-2 text-right font-800 ${(E.ingresos-E.costoConc-R.Sa.total)>=0?'text-brand-700':'text-rose-600'}">${usd(E.ingresos-E.costoConc-R.Sa.total)}</td></tr></tfoot></table>
+     <p class="text-[10px] text-brand-400 mt-2">Margen parcial: s\u00f3lo descuenta alimento y sanidad (no incluye mano de obra, instalaciones, reproducci\u00f3n ni otros costos fijos).</p></div>`);
+  <!--UI3b-->
+  $('rightcol').innerHTML=cFlow+fTbl+pTbl+coTbl+saTbl+eTbl;
+}
+function computeAndRender(){
+  const R=computeAll();
+  renderKPIs(R);renderLeft(R);renderRight(R);renderRamp();
+  document.querySelectorAll('input[data-k]').forEach(inp=>inp.addEventListener('change',e=>{
+    const k=e.target.dataset.k;let v=parseFloat(e.target.value);if(isNaN(v))v=0;S[k]=v;computeAndRender();}));
+  document.querySelectorAll('input[data-fi]').forEach(inp=>inp.addEventListener('change',e=>{
+    const i=+e.target.dataset.fi,p=e.target.dataset.fp;let v=parseFloat(e.target.value);if(isNaN(v))v=0;S.feed[i][p]=v;computeAndRender();}));
+}
+$('btnReset').addEventListener('click',()=>{S=JSON.parse(JSON.stringify(DEF));computeAndRender();});
+$('btnPrint').addEventListener('click',()=>window.print());
+computeAndRender();
+</script>
+<!--JS-->
+</body>
+</html>

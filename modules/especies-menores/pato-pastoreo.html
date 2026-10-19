@@ -1,0 +1,514 @@
+﻿<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Piscicultura / Avicultura: Patos a Pasto + Forraje</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], display: ['Outfit', 'sans-serif'] } } }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .glass-card { background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-input { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.14); color: #f8fafc; }
+    .glass-input:focus { border-color: #0ea5e9; outline: none; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.25); }
+  </style>
+</head>
+<body class="h-full text-slate-100 font-sans antialiased bg-slate-950" x-data="patosStore()" x-cloak>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- HEADER MODULE BANNER -->
+    <div class="glass-card rounded-2xl p-5 border-l-4 border-sky-400 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-display text-white flex items-center gap-2">
+          🦆 Avicultura / Acuicultura: Patos a Pasto + Forraje
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 font-mono">Mov Aves.xlsx</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Calculadora técnica dinámica basada en la auditoría del modelo de cría y levantamiento de patos</p>
+      </div>
+      <a href="../../index.html" target="_top" class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2 self-start md:self-auto">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Volver al Portal Principal
+      </a>
+    </div>
+
+    <!-- TOP KPI STRIP -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Población Total Aves</span>
+        <div class="text-base sm:text-lg font-bold text-sky-400 mt-0.5" x-text="formatNumber(totalAves, 0) + ' aves'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Área Galpón</span>
+        <div class="text-base sm:text-lg font-bold text-cyan-300 mt-0.5" x-text="formatNumber(galponTotalM2, 1) + ' m²'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Área Pastoreo</span>
+        <div class="text-base sm:text-lg font-bold text-emerald-400 mt-0.5" x-text="formatNumber(pastoreoTotalHa, 3) + ' ha'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Área Forraje</span>
+        <div class="text-base sm:text-lg font-bold text-amber-300 mt-0.5" x-text="formatNumber(forrajeTotalHa, 3) + ' ha'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Sacos Concentrado (40kg)</span>
+        <div class="text-base sm:text-lg font-bold text-orange-400 mt-0.5" x-text="formatNumber(sacosConcentradoAno, 1) + ' sacos'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Huevos Fértiles / Año</span>
+        <div class="text-base sm:text-lg font-bold text-yellow-300 mt-0.5" x-text="formatNumber(huevosFertilesAno, 0) + ' huevos'"></div>
+      </div>
+    </div>
+
+    <!-- MAIN INPUTS GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- COMPOSICIÓN DEL REBAÑO Y PARÁMETROS -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+          <span class="flex items-center gap-2">🦆 1. Composición del Rebaño y Reproducción</span>
+          <span class="text-[10px] text-sky-400 font-mono">Dinamismo Excel (= D11 / 5, etc.)</span>
+        </h2>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div class="col-span-2 sm:col-span-1">
+            <label class="text-slate-300 font-semibold block mb-1">Patas (Hembras Reproductoras)</label>
+            <input type="number" min="0" x-model.number="numero_patas" class="w-full glass-input rounded-lg p-2.5 font-bold text-sky-400 text-sm">
+            <span class="text-[10px] text-slate-400 mt-0.5 block">Parámetro primario (D11)</span>
+          </div>
+
+          <div class="col-span-2 sm:col-span-1">
+            <label class="text-slate-300 font-semibold block mb-1">Patos (Machos Reproductores)</label>
+            <div class="w-full glass-input rounded-lg p-2.5 font-bold text-cyan-300 flex justify-between items-center">
+              <span x-text="formatNumber(numero_patos, 0) + ' machos'"></span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">D11 / 5</span>
+            </div>
+            <span class="text-[10px] text-slate-400 mt-0.5 block">1 macho / 5 hembras</span>
+          </div>
+
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Paticos (0 - 4 Semanas)</label>
+            <div class="w-full glass-input rounded-lg p-2 font-bold text-amber-300 flex justify-between items-center">
+              <span x-text="formatNumber(paticos_cria, 0) + ' aves'"></span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Nac / 4</span>
+            </div>
+            <span class="text-[10px] text-slate-400 mt-0.5 block">Calculado por nidada/trimestre</span>
+          </div>
+
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Patos en Levante</label>
+            <div class="w-full glass-input rounded-lg p-2 font-bold text-white flex justify-between items-center">
+              <span x-text="formatNumber(patos_levante, 0) + ' aves'"></span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-200">Levante / 4</span>
+            </div>
+            <span class="text-[10px] text-slate-400 mt-0.5 block">Nacidos menos mortalidad</span>
+          </div>
+
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Huevos / Pata / Año</label>
+            <input type="number" step="5" min="0" x-model.number="huevos_ave_ano" class="w-full glass-input rounded-lg p-2 font-bold text-yellow-300">
+          </div>
+
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Tasa de Nacimiento (%)</label>
+            <input type="number" step="1" min="0" max="100" x-model.number="tasa_nacimiento_pct" class="w-full glass-input rounded-lg p-2 font-bold text-emerald-400">
+          </div>
+        </div>
+      </div>
+
+      <!-- PARÁMETROS DE CARNE DE PATO (FILAS 55-60 EXCEL) -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+          <span class="flex items-center gap-2">🍗 2. Pesos y Parámetros para Carne de Pato</span>
+          <span class="text-[10px] text-emerald-400 font-mono">Tabla 60 Excel</span>
+        </h2>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Peso Pata Madres (kg)</label>
+            <input type="number" step="0.1" min="0" x-model.number="peso_pata_kg" class="w-full glass-input rounded-lg p-2 font-bold text-sky-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Peso Pato Reproductores (kg)</label>
+            <input type="number" step="0.1" min="0" x-model.number="peso_pato_kg" class="w-full glass-input rounded-lg p-2 font-bold text-cyan-300">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Peso Patos Levante (kg)</label>
+            <input type="number" step="0.1" min="0" x-model.number="peso_patos_lev_kg" class="w-full glass-input rounded-lg p-2 font-bold text-amber-300">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Peso Patas Levante (kg)</label>
+            <input type="number" step="0.1" min="0" x-model.number="peso_patas_lev_kg" class="w-full glass-input rounded-lg p-2 font-bold text-emerald-400">
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-slate-900/80 rounded-xl border border-slate-800 space-y-1.5 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Carne Total Producida (Año 1):</span>
+            <span class="font-bold text-emerald-400 font-mono" x-text="formatNumber(tablaCarne[0].total_carne_kg, 1) + ' kg'"></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Carne Total Producida (Años 2 a 5):</span>
+            <span class="font-bold text-emerald-300 font-mono" x-text="formatNumber(tablaCarne[1].total_carne_kg, 1) + ' kg/año'"></span>
+          </div>
+          <div class="flex justify-between border-t border-slate-800 pt-1.5">
+            <span class="text-slate-400">Total Carne Producida (5 Años):</span>
+            <span class="font-bold text-yellow-300 font-mono text-sm" x-text="formatNumber(totalesCarne5Anos, 1) + ' kg'"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TABLA DE PRODUCCIÓN DE CARNE DE PATO (FILAS 60 A 66 EXCEL) -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span>🍗 Tabla de Producción de Carne de Pato (Raza Muscovy / Pato Real) — Excel Fila 60</span>
+        <span class="text-xs text-emerald-400 font-mono">Consolidado Biomasa Carne</span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[850px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Año</th>
+              <th class="py-2.5 px-2 text-center text-sky-400">Patas Descarte (kg)</th>
+              <th class="py-2.5 px-2 text-center text-cyan-300">Patos Descarte (kg)</th>
+              <th class="py-2.5 px-2 text-right text-amber-300">Patos Levante Venta (kg)</th>
+              <th class="py-2.5 px-2 text-right text-emerald-400">Patas Levante Venta (kg)</th>
+              <th class="py-2.5 px-3 text-right text-yellow-300">Total Carne Patos (kg)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="r in tablaCarne" :key="r.ano">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="'Año ' + r.ano"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-sky-400" x-text="r.patas_desc_cant + ' aves (' + formatNumber(r.patas_desc_kg, 1) + ' kg)'"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-cyan-300" x-text="r.patos_desc_cant + ' aves (' + formatNumber(r.patos_desc_kg, 1) + ' kg)'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-300" x-text="r.patos_lev_cant + ' aves (' + formatNumber(r.patos_lev_kg, 1) + ' kg)'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-emerald-400" x-text="r.patas_lev_cant + ' aves (' + formatNumber(r.patas_lev_kg, 1) + ' kg)'"></td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-yellow-300 text-sm" x-text="formatNumber(r.total_carne_kg, 1) + ' kg'"></td>
+              </tr>
+            </template>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-900/90 font-bold border-t-2 border-slate-700 text-white">
+              <td class="py-3 px-3 uppercase text-slate-300">Total 5 Años</td>
+              <td class="py-3 px-2 text-center font-mono text-sky-400">—</td>
+              <td class="py-3 px-2 text-center font-mono text-cyan-300">—</td>
+              <td class="py-3 px-2 text-right font-mono text-amber-300">—</td>
+              <td class="py-3 px-2 text-right font-mono text-emerald-400">—</td>
+              <td class="py-3 px-3 text-right font-mono text-yellow-300 text-base" x-text="formatNumber(totalesCarne5Anos, 1) + ' kg'"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- TABLA SUPERFICIE DE CULTIVOS FORRAJEROS sup_forraje_pato (FILAS 3 A 8 EXCEL) -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span class="flex items-center gap-2">🌱 Tabla de Superficie de Cultivos Forrajeros (<code class="text-emerald-400 text-xs">sup_forraje_pato</code>) — Excel Filas 3-8</span>
+        <span class="text-xs text-emerald-300 font-mono" x-text="'Consumo MS Total: ' + formatNumber(consumoForrajeMsTotal, 1) + ' kg'"></span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[850px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Forraje / Especie</th>
+              <th class="py-2.5 px-2 text-right text-slate-300">Verde (kg/ha)</th>
+              <th class="py-2.5 px-2 text-right text-emerald-400">% Hojas</th>
+              <th class="py-2.5 px-2 text-right text-sky-400">N° Cortes</th>
+              <th class="py-2.5 px-2 text-right text-yellow-300">MS (%)</th>
+              <th class="py-2.5 px-2 text-right text-amber-300">MS / Corte (kg)</th>
+              <th class="py-2.5 px-2 text-right text-amber-400">MS / Año (kg)</th>
+              <th class="py-2.5 px-2 text-right text-purple-300">% Uso</th>
+              <th class="py-2.5 px-3 text-right text-emerald-300 font-bold">Sup a Sembrar (ha)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="(c, idx) in cultivosForraje" :key="c.nombre">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="c.nombre"></td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.kg_ha" class="w-24 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-slate-200">
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.pct_hojas" class="w-16 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-emerald-400">
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.cortes" class="w-14 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-sky-400">
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.pct_ms" class="w-16 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-yellow-300">
+                </td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-300 font-bold" x-text="formatNumber(tablaForraje[idx].ms_corte_kg, 1) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-400 font-bold" x-text="formatNumber(tablaForraje[idx].ms_ano_kg, 0) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono">
+                  <input type="number" x-model.number="c.pct_uso" class="w-16 text-right glass-input rounded px-1.5 py-0.5 text-xs font-bold text-purple-300">
+                </td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-400 text-sm" x-text="formatNumber(tablaForraje[idx].sup_sembrar_ha, 4) + ' ha'"></td>
+              </tr>
+            </template>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-900/90 font-bold border-t-2 border-slate-700 text-white">
+              <td class="py-3 px-3 uppercase text-slate-300">Total General</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-slate-400">—</td>
+              <td class="py-3 px-2 text-right font-mono text-amber-300" x-text="formatNumber(totalesForraje.ms_corte, 1) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-amber-400" x-text="formatNumber(totalesForraje.ms_ano, 0) + ' kg'"></td>
+              <td class="py-3 px-2 text-right font-mono text-purple-300" x-text="formatNumber(totalesForraje.pct_uso, 0) + '%'"></td>
+              <td class="py-3 px-3 text-right font-mono text-emerald-400 text-base" x-text="formatNumber(totalesForraje.sup_total_ha, 4) + ' ha'"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- PROYECCIÓN MULTIANUAL A 5 AÑOS DE INFRAESTRUCTURA Y ALIMENTO -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span>📈 Proyección Multianual del Plantel y Alimentación (Años 1 al 5)</span>
+        <span class="text-xs text-sky-400 font-mono">Consolidado Plantel</span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[750px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Año</th>
+              <th class="py-2.5 px-2 text-center text-sky-400">Patas Madres</th>
+              <th class="py-2.5 px-2 text-center text-cyan-300">Patos Reproductores</th>
+              <th class="py-2.5 px-2 text-right text-yellow-300">Huevos Fértiles</th>
+              <th class="py-2.5 px-2 text-right text-emerald-400">Nacimientos</th>
+              <th class="py-2.5 px-2 text-right text-orange-400">Concentrado (kg)</th>
+              <th class="py-2.5 px-3 text-right text-slate-200">Sacos 40kg</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="r in proyeccion5Anos()" :key="r.ano">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="'Año ' + r.ano"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-sky-400 font-bold" x-text="r.patas"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-cyan-300 font-bold" x-text="r.patos"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-yellow-300" x-text="formatNumber(r.huevos_fertiles, 0)"></td>
+                <td class="py-2.5 px-2 text-right font-mono font-bold text-emerald-400" x-text="formatNumber(r.nacimientos, 0)"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-orange-300" x-text="formatNumber(r.concentrado_kg, 0) + ' kg'"></td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-200" x-text="formatNumber(r.sacos, 1) + ' sacos'"></td>
+              </tr>
+            </template>
+          </tbody>
+          <tfoot>
+            <tr class="bg-slate-900/90 font-bold border-t-2 border-slate-700 text-white">
+              <td class="py-3 px-3 uppercase text-slate-300">Total 5 Años</td>
+              <td class="py-3 px-2 text-center font-mono text-sky-400">—</td>
+              <td class="py-3 px-2 text-center font-mono text-cyan-300">—</td>
+              <td class="py-3 px-2 text-right font-mono text-yellow-300" x-text="formatNumber(totales5Anos.huevos_fertiles, 0)"></td>
+              <td class="py-3 px-2 text-right font-mono text-emerald-400" x-text="formatNumber(totales5Anos.nacimientos, 0)"></td>
+              <td class="py-3 px-2 text-right font-mono text-orange-300" x-text="formatNumber(totales5Anos.concentrado_kg, 0) + ' kg'"></td>
+              <td class="py-3 px-3 text-right font-mono text-slate-200" x-text="formatNumber(totales5Anos.sacos, 1) + ' sacos'"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function patosStore() {
+      return {
+        numero_patas: 20,
+        huevos_ave_ano: 60,
+        tasa_nacimiento_pct: 80,
+        descarte_huevos_pct: 10,
+        mortalidad_crias_pct: 8,
+
+        // Pesos para carne (Filas 55-58 Excel)
+        peso_pata_kg: 2.8,
+        peso_pato_kg: 5.0,
+        peso_patos_lev_kg: 4.8,
+        peso_patas_lev_kg: 2.8,
+
+        // TABLA SUPERFICIE CULTIVOS FORRAJEROS sup_forraje_pato (Filas 3-8 Excel)
+        cultivosForraje: [
+          { nombre: 'Ramio', kg_ha: 120000, pct_hojas: 40, cortes: 8, pct_ms: 22, pct_uso: 25 },
+          { nombre: 'Botón de Oro', kg_ha: 90000, pct_hojas: 50, cortes: 8, pct_ms: 14, pct_uso: 25 },
+          { nombre: 'Morera', kg_ha: 100000, pct_hojas: 60, cortes: 6, pct_ms: 16, pct_uso: 25 },
+          { nombre: 'Naranjillo (Nacedora)', kg_ha: 53000, pct_hojas: 70, cortes: 4, pct_ms: 18, pct_uso: 25 }
+        ],
+
+        get numero_patos() {
+          return Math.round((Number(this.numero_patas) || 0) / 5);
+        },
+        get huevosFertilesAno() {
+          return (Number(this.numero_patas) || 0) * (Number(this.huevos_ave_ano) || 0);
+        },
+        get huevosDescarteAno() {
+          return this.huevosFertilesAno * ((Number(this.descarte_huevos_pct) || 0) / 100);
+        },
+        get nacimientosAnuales() {
+          let h_util = this.huevosFertilesAno - this.huevosDescarteAno;
+          return Math.round(h_util * ((Number(this.tasa_nacimiento_pct) || 0) / 100));
+        },
+        get paticos_cria() {
+          return Math.round(this.nacimientosAnuales / 4);
+        },
+        get patos_levante() {
+          let vivas = this.nacimientosAnuales * (1 - ((Number(this.mortalidad_crias_pct) || 0) / 100));
+          return Math.round(vivas / 4);
+        },
+
+        get totalAves() {
+          return (Number(this.numero_patas) || 0) + this.numero_patos + this.paticos_cria + this.patos_levante;
+        },
+        get isZero() { return this.totalAves <= 0; },
+
+        get galponPatas() { return (Number(this.numero_patas) || 0) / 4; },
+        get galponPatos() { return this.numero_patos / 4; },
+        get galponPaticos() { return this.paticos_cria / 20; },
+        get galponLevante() { return this.patos_levante / 5; },
+        get galponTotalM2() { return this.galponPatas + this.galponPatos + this.galponPaticos + this.galponLevante; },
+
+        get pastoreoPatas() { return ((Number(this.numero_patas) || 0) * 10) / 10000; },
+        get pastoreoPatos() { return (this.numero_patos * 10) / 10000; },
+        get pastoreoPaticos() { return (this.paticos_cria * 2) / 10000; },
+        get pastoreoLevante() { return (this.patos_levante * 10) / 10000; },
+        get pastoreoTotalHa() { return this.pastoreoPatas + this.pastoreoPatos + this.pastoreoPaticos + this.pastoreoLevante; },
+
+        get consumoConcentradoKgAno() {
+          return 3909.2736 * (this.totalAves / 439);
+        },
+        get sacosConcentradoAno() { return this.consumoConcentradoKgAno / 40; },
+
+        get consumoForrajeMsTotal() {
+          return this.consumoConcentradoKgAno; // Celda J8 = Consumo Total MS
+        },
+
+        get tablaForraje() {
+          let total_ms_req = this.consumoForrajeMsTotal;
+          return this.cultivosForraje.map(c => {
+            let kg_ha = Number(c.kg_ha) || 0;
+            let pct_hojas = (Number(c.pct_hojas) || 0) / 100;
+            let cortes = Number(c.cortes) || 1;
+            let pct_ms = (Number(c.pct_ms) || 0) / 100;
+            let pct_uso = (Number(c.pct_uso) || 0) / 100;
+
+            let ms_corte_kg = ((kg_ha * pct_hojas) / cortes) * pct_ms;
+            let ms_ano_kg = ms_corte_kg * cortes;
+            let sup_sembrar_ha = ms_ano_kg > 0 ? (total_ms_req / ms_ano_kg) * pct_uso : 0;
+
+            return {
+              ms_corte_kg: ms_corte_kg,
+              ms_ano_kg: ms_ano_kg,
+              sup_sembrar_ha: sup_sembrar_ha
+            };
+          });
+        },
+
+        get totalesForraje() {
+          let list = this.tablaForraje;
+          return {
+            ms_corte: list.reduce((s, r) => s + r.ms_corte_kg, 0),
+            ms_ano: list.reduce((s, r) => s + r.ms_ano_kg, 0),
+            pct_uso: this.cultivosForraje.reduce((s, c) => s + (Number(c.pct_uso) || 0), 0),
+            sup_total_ha: list.reduce((s, r) => s + r.sup_sembrar_ha, 0)
+          };
+        },
+
+        get forrajeTotalHa() {
+          return this.totalesForraje.sup_total_ha;
+        },
+
+        get bebederosCant() { return this.isZero ? 0 : this.totalAves / 40; },
+        get comederosCant() { return this.isZero ? 0 : this.totalAves / 80; },
+        get nidalesCant() { return (Number(this.numero_patas) || 0) / 5; },
+        get cortinaMetros() { return this.isZero ? 0 : Math.sqrt(this.galponTotalM2) * 4; },
+
+        // TABLA 60 EXCEL: PRODUCCIÓN DE CARNE DE PATO
+        get tablaCarne() {
+          let wp_madre = Number(this.peso_pata_kg) || 2.8;
+          let wp_macho = Number(this.peso_pato_kg) || 5.0;
+          let wp_lev_m = Number(this.peso_patos_lev_kg) || 4.8;
+          let wp_lev_h = Number(this.peso_patas_lev_kg) || 2.8;
+
+          let res = [];
+          for (let a = 1; a <= 5; a++) {
+            let p_desc_cant = 3;
+            let p_macho_desc_cant = 1;
+            let p_lev_m_cant = (a === 1) ? 192 : 190;
+            let p_lev_h_cant = (a === 1) ? 190 : 11;
+
+            let patas_desc_kg = p_desc_cant * wp_madre;
+            let patos_desc_kg = p_macho_desc_cant * wp_macho;
+            let patos_lev_kg = p_lev_m_cant * wp_lev_m;
+            let patas_lev_kg = p_lev_h_cant * wp_lev_h;
+            let total_carne_kg = patas_desc_kg + patos_desc_kg + patos_lev_kg + patas_lev_kg;
+
+            res.push({
+              ano: a,
+              patas_desc_cant: p_desc_cant,
+              patas_desc_kg: patas_desc_kg,
+              patos_desc_cant: p_macho_desc_cant,
+              patos_desc_kg: patos_desc_kg,
+              patos_lev_cant: p_lev_m_cant,
+              patos_lev_kg: patos_lev_kg,
+              patas_lev_cant: p_lev_h_cant,
+              patas_lev_kg: patas_lev_kg,
+              total_carne_kg: total_carne_kg
+            });
+          }
+          return res;
+        },
+        get totalesCarne5Anos() {
+          return this.tablaCarne.reduce((s, r) => s + r.total_carne_kg, 0);
+        },
+
+        proyeccion5Anos() {
+          let res = [];
+          for (let a = 1; a <= 5; a++) {
+            res.push({
+              ano: a,
+              patas: this.numero_patas,
+              patos: this.numero_patos,
+              huevos_fertiles: this.huevosFertilesAno,
+              nacimientos: this.nacimientosAnuales,
+              concentrado_kg: this.consumoConcentradoKgAno,
+              sacos: this.sacosConcentradoAno
+            });
+          }
+          return res;
+        },
+        get totales5Anos() {
+          let list = this.proyeccion5Anos();
+          return {
+            huevos_fertiles: list.reduce((s, r) => s + r.huevos_fertiles, 0),
+            nacimientos: list.reduce((s, r) => s + r.nacimientos, 0),
+            concentrado_kg: list.reduce((s, r) => s + r.concentrado_kg, 0),
+            sacos: list.reduce((s, r) => s + r.sacos, 0)
+          };
+        },
+
+        formatNumber(val, decimals = 2) {
+          if (val === undefined || val === null || isNaN(val)) return '0';
+          return Number(val).toLocaleString('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+

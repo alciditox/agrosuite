@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Porcina con Yuca · Ciclo Completo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{
+  brand:{50:'#f3f8f0',100:'#e3efdb',200:'#c7dfb9',300:'#a0c88b',400:'#79ad5e',500:'#5a9140',600:'#447230',700:'#375a28',800:'#2e4824',900:'#283c20'},
+  gold:{400:'#e0b64a',500:'#c99a2e',600:'#a87c22',700:'#8a641c'},
+  sky:{50:'#eef6fb',100:'#d4e9f4',400:'#4f9fcb',500:'#3685b4',600:'#296a92'},
+  rose:{400:'#e07a9a',500:'#cf5c80',600:'#b24466'},
+  clay:{400:'#d98a5b',500:'#c56f3f',600:'#a9572e'}},
+  fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--ring:#5a9140;}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(160deg,#f6faf3 0%,#f7f3e8 100%);}
+  .glass{backdrop-filter:blur(10px);background:rgba(255,255,255,.76);}
+  .card{border:1px solid rgba(68,114,48,.12);box-shadow:0 1px 2px rgba(40,60,32,.04),0 8px 24px -12px rgba(40,60,32,.18);}
+  .num-in:focus{outline:none;border-color:var(--ring);box-shadow:0 0 0 3px rgba(90,145,64,.18);}
+  .fade-up{animation:fu .5s ease both}@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  table{border-collapse:separate;border-spacing:0}.tbl th,.tbl td{white-space:nowrap}
+  .kpi{background:linear-gradient(135deg,#447230,#5a9140)}.kpi2{background:linear-gradient(135deg,#2e4824,#447230)}
+  .kpi3{background:linear-gradient(135deg,#c99a2e,#e0b64a)}.kpi4{background:linear-gradient(135deg,#296a92,#4f9fcb)}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-webkit-appearance:textfield;-moz-appearance:textfield;appearance:textfield}
+  .flow{position:relative}.arr{color:#a0c88b}
+  ::-webkit-scrollbar{height:9px;width:9px}::-webkit-scrollbar-thumb{background:#c7dfb9;border-radius:9px}
+  @media print{.no-print{display:none!important}body{background:#fff}}
+</style>
+</head>
+<body class="text-brand-900">
+<header class="glass sticky top-0 z-30 border-b border-brand-200/60">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="h-11 w-11 rounded-2xl kpi3 flex items-center justify-center text-white text-2xl shadow-lg">🐷</div>
+      <div>
+        <h1 class="text-base sm:text-lg font-extrabold leading-tight">Calculadora Porcina con Yuca</h1>
+        <p class="text-[11px] sm:text-xs text-brand-600 font-medium">Ciclo completo · concentrado + raíces (yuca)</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 no-print">
+      <button id="btnReset" class="text-xs font-semibold px-3 py-2 rounded-xl border border-brand-200 hover:bg-brand-50 transition">↻ Restablecer</button>
+      <button id="btnPrint" class="text-xs font-semibold px-3 py-2 rounded-xl text-white kpi3 hover:brightness-110 transition shadow">🖨 Imprimir / PDF</button>
+    </div>
+  </div>
+</header>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" id="kpis"></section>
+  <section id="rampup"></section>
+  <div class="grid lg:grid-cols-12 gap-6">
+    <div class="lg:col-span-4 space-y-6" id="leftcol"></div>
+    <div class="lg:col-span-8 space-y-6" id="rightcol"></div>
+  </div>
+  <footer class="text-center text-[11px] text-brand-500 pt-2 pb-6">Basada en el modelo <b>Movimiento Porcino con yuca</b>. Opera en régimen estabilizado con dieta mixta concentrado + raíces (yuca). Ajuste los índices, porcentajes y rendimientos a su realidad.</footer>
+</main>
+<script>
+// ---- Parámetros por defecto (de las hojas INDICES P / ALIM 1 / data cochinos) ----
+const DEF={
+  madresIni:5, madres:5, partosAno:2.2, lechonesPorParto:10, relacionHM:10,
+  mortLechones:20, mortBateria:4, mortCrecimiento:3, mortEngorde:1,
+  descarteHembras:10, descarteVerracos:25,
+  pesoCerdo:95, pesoMadre:130, pesoVerraco:230,
+  precioCerdo:2.20, precioDescarte:1.60, precioConc:0.65, precioYuca:0.12,
+  feed:[
+    {g:'Madres secas',        cat:'madre',   dias:21,  cons:2,   pc:40,  py:60},
+    {g:'Madres gestantes I',  cat:'madre',   dias:85,  cons:2,   pc:60,  py:40},
+    {g:'Madres gestantes II', cat:'madre',   dias:20,  cons:3,   pc:60,  py:40},
+    {g:'Madres gestantes III',cat:'madre',   dias:10,  cons:2,   pc:60,  py:40},
+    {g:'Madres lactantes',    cat:'madre',   dias:30,  cons:5.5, pc:80,  py:20},
+    {g:'Verracos',            cat:'verraco', dias:365, cons:2,   pc:40,  py:60},
+    {g:'Reemplazo (hembras)', cat:'reempl',  dias:90,  cons:2,   pc:70,  py:30},
+    {g:'Lechones lactantes 1',cat:'nacidos',dias:14,  cons:0,   pc:100, py:0},
+    {g:'Lechones lactantes 2',cat:'destete',dias:14,  cons:0.5, pc:100, py:0},
+    {g:'Lechones destetados 1',cat:'bateria',dias:10,  cons:1,   pc:100, py:0},
+    {g:'Lechones destetados 2',cat:'bateria',dias:10,  cons:1,   pc:100, py:0},
+    {g:'Lechones destetados 3',cat:'bateria',dias:10,  cons:1.5, pc:80,  py:20},
+    {g:'Lechones destetados 4',cat:'bateria',dias:10,  cons:1.5, pc:80,  py:20},
+    {g:'Cerdos crecimiento 1',cat:'crecim',  dias:12,  cons:2,   pc:60,  py:40},
+    {g:'Cerdos crecimiento 2',cat:'crecim',  dias:12,  cons:2,   pc:55,  py:45},
+    {g:'Cerdos crecimiento 3',cat:'crecim',  dias:12,  cons:2,   pc:50,  py:50},
+    {g:'Cerdos crecimiento 4',cat:'crecim',  dias:12,  cons:2,   pc:45,  py:55},
+    {g:'Cerdos engorde 1',    cat:'engorde', dias:14,  cons:3,   pc:40,  py:60},
+    {g:'Cerdos engorde 2',    cat:'engorde', dias:12,  cons:3,   pc:40,  py:60},
+    {g:'Cerdos engorde 3',    cat:'engorde', dias:12,  cons:3,   pc:40,  py:60},
+    {g:'Cerdos engorde 4',    cat:'engorde', dias:12,  cons:2.5, pc:40,  py:60}
+  ],
+  forrajes:[
+    {n:'Yuca',       rend:14000, ms:30, uso:100},
+    {n:'Batata',     rend:15000, ms:25, uso:0},
+    {n:'Ocumo chino',rend:15000, ms:25, uso:0},
+    {n:'Ñame',       rend:12000, ms:28, uso:0}
+  ]
+};
+const SAN=[
+  {n:'Pseudorrabia (SR)',  dl:2, dv:2, dm:3, div:50, pu:11},
+  {n:'Neumon\u00eda (NE)',     dl:2, dv:2, dm:2, div:50, pu:11},
+  {n:'Peste Porcina (PP)', dl:1, dv:2, dm:2, div:50, pu:11},
+  {n:'Leptospira (LP)',    dl:0, dv:2, dm:2, div:50, pu:11},
+  {n:'Hierro',             dl:1, dv:0, dm:0, div:50, pu:8},
+  {n:'Desparasitante',     dl:2, dv:5, dm:4, div:100,pu:12},
+  {n:'Vitaminas AD3E',     dl:1, dv:3, dm:3, div:100,pu:15}
+];
+const CONS={diasJaula:40, espJaula:4, espHembra:2, espVerraco:8, espDestete:0.33, espEngorde:1, animCorralDest:10, animCorralEng:20, semBateria:6, semEngorde:12};
+const RAMPFRAC={
+  madres:[1.0,1.0], verracos:[1.0,1.0], montas:[1.1538,1.0769], gestantes:[0.9091,1.0],
+  nacidos:[0.6909,1.0], destete:[0.6136,1.0], bateria:[0.4881,1.0], crecim:[0.3659,1.0],
+  engorde:[0.2346,0.9877], venta:[0.2346,0.9877], descM:[1.0,1.0], descV:[0,0],
+  conc:[0.5051,0.9966], yuca:[0.4073,0.9936], carne:[0.2473,0.9879]
+};
+let S=JSON.parse(JSON.stringify(DEF));
+const $=id=>document.getElementById(id);
+const r0=n=>Math.round(n), up=n=>Math.ceil(n-1e-9);
+const fmt=(n,d=2)=>isFinite(n)?n.toLocaleString('es',{minimumFractionDigits:d,maximumFractionDigits:d}):'\u2013';
+const usd=n=>'$'+fmt(n,2);
+function herd(m){
+  const madres=(m===undefined)?S.madres:m;
+  const verracos=up(madres/S.relacionHM);
+  const partos=madres*S.partosAno;
+  const nacidos=partos*S.lechonesPorParto;
+  const destete=nacidos*(1-S.mortLechones/100);
+  const bateria=destete*(1-S.mortBateria/100);
+  const crecimiento=bateria*(1-S.mortCrecimiento/100);
+  const engSobrev=crecimiento*(1-S.mortEngorde/100);
+  const descMadres=Math.round(madres*S.descarteHembras/100);
+  const descVerracos=Math.round(verracos*S.descarteVerracos/100);
+  const reemplazo=descMadres;
+  const venta=Math.round(engSobrev);
+  const lechSem=up(destete/52);
+  return {madres,verracos,partos,nacidos,destete,bateria,crecimiento,engSobrev,descMadres,descVerracos,reemplazo,venta,lechSem};
+}
+function cnt(cat,H){
+  switch(cat){
+    case 'madre':return{n:H.madres,ciclos:S.partosAno};
+    case 'verraco':return{n:H.verracos,ciclos:1};
+    case 'reempl':return{n:H.reemplazo,ciclos:1};
+    case 'nacidos':return{n:r0(H.nacidos),ciclos:1};
+    case 'destete':return{n:r0(H.destete),ciclos:1};
+    case 'bateria':return{n:r0(H.bateria),ciclos:1};
+    case 'crecim':return{n:r0(H.crecimiento),ciclos:1};
+    case 'engorde':return{n:r0(H.venta),ciclos:1};
+  }
+}
+// Dieta: consumo total, kg concentrado y kg raíces (yuca) por etapa
+function feedCalc(H){
+  let rows=[],totKg=0,conc=0,yuca=0;
+  S.feed.forEach((f,i)=>{
+    const c=cnt(f.cat,H);
+    const kgAn=f.dias*f.cons;
+    const kgTot=kgAn*c.n*c.ciclos;
+    const kgConc=kgTot*(f.pc/100);
+    const kgYuca=kgTot*(f.py/100);
+    totKg+=kgTot;conc+=kgConc;yuca+=kgYuca;
+    rows.push({...f,i,n:c.n,ciclos:c.ciclos,kgAn,kgTot,kgConc,kgYuca});
+  });
+  return {rows,totKg,conc,yuca};
+}
+function prodCalc(H){
+  const carneCerdos=H.venta*S.pesoCerdo;
+  const carneMadres=H.descMadres*S.pesoMadre;
+  const carneVerracos=H.descVerracos*S.pesoVerraco;
+  return {carneCerdos,carneMadres,carneVerracos,carneTotal:carneCerdos+carneMadres+carneVerracos};
+}
+function sanCalc(H){
+  const L=r0(H.nacidos),V=H.verracos,M=H.madres;
+  let rows=[],prev=0;
+  SAN.forEach(s=>{
+    const dosis=s.dl*L+s.dv*V+s.dm*M;
+    const frascos=dosis/s.div;
+    const total=frascos*s.pu;
+    prev+=total;
+    rows.push({...s,dosis,frascos,total});
+  });
+  const curativo=prev*0.2;
+  return {rows,prev,curativo,total:prev+curativo};
+}
+function consCalc(H){
+  const C=CONS;
+  const jaulasMat=S.madres*S.partosAno*C.diasJaula/365;
+  const aMat=C.espJaula*jaulasMat;
+  const aGest=(S.madres-jaulasMat)*C.espHembra;
+  const aVerr=C.espVerraco*H.verracos;
+  const corrDest=up(H.lechSem*C.semBateria/C.animCorralDest);
+  const aDest=(C.animCorralDest*corrDest)*C.espDestete;
+  const corrEng=up(H.lechSem*C.semEngorde/C.animCorralEng);
+  const aEng=(C.animCorralDest*corrEng)*C.espEngorde;
+  const subMat=aMat+aGest+aDest;
+  const aProd=subMat+aEng+aVerr;
+  const pasillos=aProd*0.3;
+  return {jaulasMat,aMat,aGest,aVerr,aDest,aEng,corrDest,corrEng,subMat,aProd,pasillos,totalArea:aProd+pasillos};
+}
+// Área a sembrar de raíces por año: consumo de yuca (kg) -> / MS de cada cultivo / rendimiento, ajustado por % de uso
+function areaYuca(years){
+  const rows=S.forrajes.map(fr=>{
+    const msHa=fr.rend*(fr.ms/100)||1;
+    const areas=years.map(yy=>(yy.yuca/msHa)*(fr.uso/100));
+    return {...fr,msHa,areas};
+  });
+  const totales=years.map((yy,i)=>rows.reduce((a,r)=>a+r.areas[i],0));
+  return {rows,totales};
+}
+function computeAll(){
+  const H=herd(),F=feedCalc(H),P=prodCalc(H),Sa=sanCalc(H),Co=consCalc(H);
+  const costoConc=F.conc*S.precioConc;
+  const costoYuca=F.yuca*S.precioYuca;
+  const costoAlim=costoConc+costoYuca;
+  const ingCerdos=H.venta*S.pesoCerdo*S.precioCerdo;
+  const ingDescarte=(H.descMadres*S.pesoMadre+H.descVerracos*S.pesoVerraco)*S.precioDescarte;
+  const ingresos=ingCerdos+ingDescarte;
+  const margen=ingresos-costoAlim-Sa.total;
+  const E={costoConc,costoYuca,costoAlim,ingCerdos,ingDescarte,ingresos,margen};
+  return {H,F,P,Sa,Co,E};
+}
+// ---------- UI ----------
+function rampModel(){
+  const mEst=S.madres, mIni=S.madresIni;
+  const Hs=herd(mEst), Fs=feedCalc(Hs), Ps=prodCalc(Hs);
+  const St={
+    madres:mEst, verracos:Hs.verracos, montas:Hs.partos/0.85, gestantes:Hs.partos,
+    nacidos:Hs.nacidos, destete:Hs.destete, bateria:Hs.bateria, crecim:Hs.crecimiento,
+    engorde:Hs.engSobrev, venta:Hs.venta, descM:Hs.descMadres, descV:Hs.descVerracos,
+    conc:Fs.conc, yuca:Fs.yuca, carne:Ps.carneTotal
+  };
+  const k1=(mEst>0)?(mIni/mEst):0;
+  const keys=Object.keys(RAMPFRAC);
+  const yr=y=>{
+    const o={a:y};
+    keys.forEach(k=>{
+      let v;
+      if(y>=3) v=St[k];
+      else if(y===1) v=St[k]*RAMPFRAC[k][0]*k1;
+      else v=St[k]*RAMPFRAC[k][1];
+      o[k]=v;
+    });
+    return o;
+  };
+  return [yr(1),yr(2),yr(3),yr(4),yr(5)];
+}
+function card(title,sub,body,extra=''){
+  return `<div class="card glass rounded-2xl p-4 sm:p-5 fade-up ${extra}">
+    <div class="flex items-baseline justify-between mb-3 gap-2"><h2 class="text-sm font-extrabold tracking-tight">${title}</h2>${sub?`<span class="text-[11px] text-brand-500 font-medium text-right">${sub}</span>`:''}</div>${body}</div>`;
+}
+function field(label,key,step='1',suf=''){
+  return `<label class="block"><span class="text-[11px] font-semibold text-brand-700">${label}</span>
+   <div class="relative mt-1"><input type="number" step="${step}" data-k="${key}" value="${S[key]}" class="num-in w-full rounded-xl border border-brand-200 bg-white/80 px-3 py-2 text-sm font-semibold text-brand-900 pr-10">
+   ${suf?`<span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-brand-400 font-semibold">${suf}</span>`:''}</div></label>`;
+}
+function renderKPIs(R){
+  const k=[
+    ['Cerdos a venta / año',fmt(R.H.venta,0),'cabezas · '+S.pesoCerdo+' kg','kpi',R.H.venta],
+    ['Concentrado total',fmt(R.F.conc,0),'kg / año','kpi2',R.F.conc],
+    ['Raíces (yuca) total',fmt(R.F.yuca,0),'kg / año','kpi3',R.F.yuca],
+    ['Ingreso bruto',usd(R.E.ingresos),'ventas / año','kpi4',R.E.ingresos]
+  ];
+  $('kpis').innerHTML=k.map(x=>`<div class="${x[3]} rounded-2xl p-4 text-white shadow-lg fade-up">
+    <div class="text-[11px] font-semibold opacity-85">${x[0]}</div>
+    <div class="text-2xl sm:text-3xl font-extrabold mt-1 leading-none">${x[1]}</div>
+    <div class="text-[11px] opacity-80 mt-1">${x[2]}</div></div>`).join('');
+}
+function renderLeft(R){
+  const prod=card('🐖 Hato reproductor','índices',
+    `<div class="grid grid-cols-2 gap-3">${field('Madres iniciales (año 1)','madresIni')}${field('Madres estabilizadas','madres')}${field('Partos / madre / año','partosAno','0.1')}${field('Lechones / parto','lechonesPorParto','0.1')}${field('Rel. hembra:macho','relacionHM','1')}${field('Descarte verracos','descarteVerracos','1','%')}${field('Descarte hembras','descarteHembras','1','%')}</div>`);
+  const mort=card('☠️ Mortalidad por etapa','% por fase',
+    `<div class="grid grid-cols-2 gap-3">${field('Lactancia (pre-destete)','mortLechones','0.5','%')}${field('Batería / destete','mortBateria','0.5','%')}${field('Crecimiento','mortCrecimiento','0.5','%')}${field('Engorde','mortEngorde','0.5','%')}</div>`);
+  const pre=card('⚖️ Pesos y precios','mercado',
+    `<div class="grid grid-cols-2 gap-3">${field('Peso venta cerdo','pesoCerdo','1','kg')}${field('Peso descarte madre','pesoMadre','1','kg')}${field('Peso descarte verraco','pesoVerraco','1','kg')}${field('Precio concentrado','precioConc','0.01','$/kg')}${field('Precio raíces (yuca)','precioYuca','0.01','$/kg')}${field('Precio cerdo en pie','precioCerdo','0.01','$/kg')}${field('Precio descarte','precioDescarte','0.01','$/kg')}</div>`);
+  $('leftcol').innerHTML=prod+mort+pre;
+}
+function renderRight(R){
+  const H=R.H;
+  const chip=(lbl,val,sub,color)=>`<div class="rounded-xl border border-brand-100 bg-white/70 px-3 py-2 text-center min-w-[92px]">
+    <div class="text-[10px] font-semibold ${color}">${lbl}</div>
+    <div class="text-lg font-extrabold leading-none mt-0.5">${val}</div>
+    <div class="text-[9px] text-brand-400 mt-0.5">${sub}</div></div>`;
+  const arr=`<div class="arr text-xl font-extrabold px-0.5">→</div>`;
+  const flow=`<div class="flow flex flex-wrap items-center gap-1.5">
+    ${chip('Madres',fmt(H.madres,0),'reproductoras','text-brand-600')}${arr}
+    ${chip('Partos',fmt(H.partos,0),S.partosAno+' /madre','text-brand-600')}${arr}
+    ${chip('Nacidos',fmt(H.nacidos,0),S.lechonesPorParto+' /parto','text-rose-500')}${arr}
+    ${chip('Destete',fmt(H.destete,0),'-'+S.mortLechones+'%','text-rose-500')}${arr}
+    ${chip('Batería',fmt(H.bateria,0),'-'+S.mortBateria+'%','text-clay-500')}${arr}
+    ${chip('Crecim.',fmt(H.crecimiento,0),'-'+S.mortCrecimiento+'%','text-clay-500')}${arr}
+    ${chip('Engorde',fmt(H.engSobrev,0),'-'+S.mortEngorde+'%','text-sky-500')}${arr}
+    ${chip('A VENTA',fmt(H.venta,0),'cerdos gordos','text-brand-700 font-extrabold')}</div>
+    <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+      ${chip('Verracos',fmt(H.verracos,0),'rel. 1:'+S.relacionHM,'text-sky-600')}
+      ${chip('Reemplazo',fmt(H.reemplazo,0),'hembras/año','text-brand-600')}
+      ${chip('Descarte madres',fmt(H.descMadres,0),S.descarteHembras+'%','text-rose-600')}
+      ${chip('Descarte verracos',fmt(H.descVerracos,0),S.descarteVerracos+'%','text-rose-600')}</div>`;
+  const cFlow=card('📊 Flujo anual del hato','régimen estabilizado',`<div class="overflow-x-auto">${flow}</div>`);
+  // ---- Dieta concentrado + yuca (editable) ----
+  let fr=R.F.rows.map(x=>`<tr class="border-b border-brand-50 hover:bg-brand-50/40">
+    <td class="py-1.5 pl-2 pr-2 font-semibold text-brand-800">${x.g}</td>
+    <td class="px-1 text-right tabular-nums text-brand-600">${fmt(x.n,0)}</td>
+    <td class="px-1 text-center"><input type="number" step="1" data-fi="${x.i}" data-fp="dias" value="${x.dias}" class="num-in w-14 text-right rounded-lg border border-brand-200 bg-white px-1.5 py-1 text-xs font-semibold"></td>
+    <td class="px-1 text-center"><input type="number" step="0.1" data-fi="${x.i}" data-fp="cons" value="${x.cons}" class="num-in w-14 text-right rounded-lg border border-brand-200 bg-white px-1.5 py-1 text-xs font-semibold"></td>
+    <td class="px-1 text-center"><input type="number" step="5" data-fi="${x.i}" data-fp="pc" value="${x.pc}" class="num-in w-14 text-right rounded-lg border border-brand-200 bg-white px-1.5 py-1 text-xs font-semibold text-brand-700"></td>
+    <td class="px-1 text-center"><input type="number" step="5" data-fi="${x.i}" data-fp="py" value="${x.py}" class="num-in w-14 text-right rounded-lg border border-gold-400/60 bg-white px-1.5 py-1 text-xs font-semibold text-gold-700"></td>
+    <td class="px-1 text-right tabular-nums font-bold text-brand-700">${fmt(x.kgConc,0)}</td>
+    <td class="px-1 text-right tabular-nums font-bold text-gold-600">${fmt(x.kgYuca,0)}</td></tr>`).join('');
+  const fTbl=card('🌾 Dieta por etapa · concentrado + raíces (yuca)','días, consumo y % editables',
+    `<div class="overflow-x-auto"><table class="tbl w-full text-xs">
+      <thead><tr class="text-[10px] uppercase tracking-wide text-brand-500 border-b border-brand-200">
+        <th class="text-left pl-2 pb-2">Etapa</th><th class="text-right px-1">Anim.</th><th class="text-center px-1">Días</th><th class="text-center px-1">kg/día</th><th class="text-center px-1">%conc</th><th class="text-center px-1">%yuca</th><th class="text-right px-1">kg conc</th><th class="text-right px-1">kg yuca</th></tr></thead>
+      <tbody>${fr}</tbody>
+      <tfoot><tr class="border-t-2 border-brand-300"><td class="py-2 pl-2 font-extrabold" colspan="6">TOTALES / año</td><td class="px-1 text-right font-extrabold text-brand-700">${fmt(R.F.conc,0)}</td><td class="px-1 text-right font-extrabold text-gold-600">${fmt(R.F.yuca,0)}</td></tr></tfoot>
+    </table></div>`);
+  // ---- Producción de carne ----
+  const prow=(l,n,p,kg,c)=>`<tr class="border-b border-brand-50"><td class="py-1.5 pl-2 font-semibold text-brand-800">${l}</td><td class="px-2 text-right tabular-nums">${fmt(n,0)}</td><td class="px-2 text-right tabular-nums">${fmt(p,0)}</td><td class="px-2 text-right tabular-nums font-bold ${c}">${fmt(kg,0)}</td></tr>`;
+  const pTbl=card('🥩 Producción de carne','kg en pie / año',
+    `<div class="overflow-x-auto"><table class="tbl w-full text-xs">
+     <thead><tr class="text-[10px] uppercase tracking-wide text-brand-500 border-b border-brand-200"><th class="text-left pl-2 pb-2">Concepto</th><th class="text-right px-2">Cabezas</th><th class="text-right px-2">Peso (kg)</th><th class="text-right px-2">Carne (kg)</th></tr></thead>
+     <tbody>${prow('Cerdos gordos (venta)',H.venta,S.pesoCerdo,R.P.carneCerdos,'text-brand-800')}${prow('Madres de descarte',H.descMadres,S.pesoMadre,R.P.carneMadres,'text-clay-600')}${prow('Verracos de descarte',H.descVerracos,S.pesoVerraco,R.P.carneVerracos,'text-clay-600')}</tbody>
+     <tfoot><tr class="border-t-2 border-brand-300"><td class="py-2 pl-2 font-extrabold">TOTAL CARNE</td><td colspan="2"></td><td class="px-2 text-right font-extrabold text-brand-700">${fmt(R.P.carneTotal,0)} kg</td></tr></tfoot></table></div>`);
+  // ---- Construcción ----
+  const corow=(l,v)=>`<tr class="border-b border-brand-50"><td class="py-1.5 pl-2 font-semibold text-brand-800">${l}</td><td class="px-2 text-right tabular-nums font-bold text-brand-700">${fmt(v,2)} m²</td></tr>`;
+  const Co=R.Co;
+  const coTbl=card('🏗️ Infraestructura requerida','área de instalaciones',
+    `<div class="overflow-x-auto"><table class="tbl w-full text-xs"><tbody>
+     ${corow('Maternidad ('+fmt(Co.jaulasMat,1)+' jaulas)',Co.aMat)}${corow('Gestación (madres)',Co.aGest)}${corow('Destete / batería ('+Co.corrDest+' corrales)',Co.aDest)}${corow('Crecimiento + engorde ('+Co.corrEng+' corrales)',Co.aEng)}${corow('Verracos',Co.aVerr)}
+     <tr class="border-b border-brand-100 bg-brand-50/40"><td class="py-1.5 pl-2 font-extrabold">Subtotal productivo</td><td class="px-2 text-right font-extrabold">${fmt(Co.aProd,2)} m²</td></tr>
+     ${corow('Pasillos y servicios (30%)',Co.pasillos)}</tbody>
+     <tfoot><tr class="border-t-2 border-brand-300"><td class="py-2 pl-2 font-extrabold">ÁREA TOTAL</td><td class="px-2 text-right font-extrabold text-brand-700">${fmt(Co.totalArea,2)} m²</td></tr></tfoot></table></div>`);
+  // ---- Raíces / área a sembrar (dinámico) ----
+  const YR=rampModel();
+  const A=areaYuca(YR);
+  const frowLet=f=>`<tr class="border-b border-brand-50 hover:bg-gold-400/5">
+    <td class="py-1.5 pl-2 font-semibold text-brand-800">${f.n}</td>
+    <td class="px-1 text-center"><input type="number" step="500" data-fo="${f.n}" data-fp="rend" value="${f.rend}" class="num-in w-20 text-right rounded-lg border border-brand-200 bg-white px-1.5 py-1 text-xs font-semibold"></td>
+    <td class="px-1 text-center"><input type="number" step="1" data-fo="${f.n}" data-fp="ms" value="${f.ms}" class="num-in w-14 text-right rounded-lg border border-brand-200 bg-white px-1.5 py-1 text-xs font-semibold"></td>
+    <td class="px-1 text-right tabular-nums text-brand-500">${fmt(f.msHa,0)}</td>
+    <td class="px-1 text-center"><input type="number" step="5" data-fo="${f.n}" data-fp="uso" value="${f.uso}" class="num-in w-14 text-right rounded-lg border border-gold-400/60 bg-white px-1.5 py-1 text-xs font-semibold text-gold-700"></td>
+    ${f.areas.map(a=>`<td class="px-1 text-right tabular-nums font-bold text-gold-600">${fmt(a,2)}</td>`).join('')}</tr>`;
+  const ftRows=A.rows.map(frowLet).join('');
+  const forTbl=card('🌱 Cultivo de raíces · área a sembrar','consume '+fmt(R.F.yuca,0)+' kg de yuca/año',
+    `<div class="overflow-x-auto"><table class="tbl w-full text-xs">
+      <thead><tr class="text-[10px] uppercase tracking-wide text-brand-500 border-b border-brand-200">
+        <th class="text-left pl-2 pb-2">Cultivo</th><th class="text-center px-1">Rend. kg/ha</th><th class="text-center px-1">MS %</th><th class="text-right px-1">MS kg/ha</th><th class="text-center px-1">%Uso</th><th class="text-right px-1">Año 1</th><th class="text-right px-1">Año 2</th><th class="text-right px-1">Año 3</th><th class="text-right px-1">Año 4</th><th class="text-right px-1">Año 5</th></tr></thead>
+      <tbody>${ftRows}</tbody>
+      <tfoot><tr class="border-t-2 border-brand-300"><td class="py-2 pl-2 font-extrabold" colspan="5">TOTAL ha a sembrar</td>${A.totales.map(t=>`<td class="px-1 text-right font-extrabold text-gold-600">${fmt(t,2)}</td>`).join('')}</tr></tfoot>
+    </table></div>
+    <p class="text-[10px] text-brand-400 mt-2">Cálculo: consumo de raíces del año / (rendimiento × MS) × % de uso. El área escala con el hato (años 3-5 = régimen).</p>`);
+  // ---- Sanidad ----
+  let sr=R.Sa.rows.map(x=>`<tr class="border-b border-brand-50"><td class="py-1.5 pl-2 font-semibold text-brand-800">${x.n}</td><td class="px-2 text-right tabular-nums">${fmt(x.dosis,0)}</td><td class="px-2 text-right tabular-nums">${fmt(x.frascos,1)}</td><td class="px-2 text-right tabular-nums">${usd(x.pu)}</td><td class="px-2 text-right tabular-nums font-bold text-brand-700">${usd(x.total)}</td></tr>`).join('');
+  const saTbl=card('💉 Programa sanitario','dosis y costo preventivo / año',
+    `<div class="overflow-x-auto"><table class="tbl w-full text-xs">
+     <thead><tr class="text-[10px] uppercase tracking-wide text-brand-500 border-b border-brand-200"><th class="text-left pl-2 pb-2">Tratamiento</th><th class="text-right px-2">Dosis</th><th class="text-right px-2">Frascos</th><th class="text-right px-2">P.U.</th><th class="text-right px-2">Total</th></tr></thead>
+     <tbody>${sr}</tbody>
+     <tfoot><tr class="border-t border-brand-200"><td class="py-1.5 pl-2 font-bold">Preventivo</td><td colspan="3"></td><td class="px-2 text-right font-bold">${usd(R.Sa.prev)}</td></tr>
+     <tr><td class="py-1 pl-2 text-brand-500">Curativo (20%)</td><td colspan="3"></td><td class="px-2 text-right text-brand-500">${usd(R.Sa.curativo)}</td></tr>
+     <tr class="border-t-2 border-brand-300"><td class="py-2 pl-2 font-extrabold">TOTAL SANIDAD</td><td colspan="3"></td><td class="px-2 text-right font-extrabold text-brand-700">${usd(R.Sa.total)}</td></tr></tfoot></table></div>`);
+  // ---- Economía ----
+  const erow=(l,v,c='text-brand-700')=>`<tr class="border-b border-brand-50"><td class="py-1.5 pl-2 font-semibold text-brand-800">${l}</td><td class="px-2 text-right tabular-nums font-bold ${c}">${usd(v)}</td></tr>`;
+  const E=R.E;
+  const eTbl=card('💰 Resumen económico','referencial / año',
+    `<div class="overflow-x-auto"><table class="tbl w-full text-xs"><tbody>
+     ${erow('Ingreso por cerdos gordos',E.ingCerdos)}${erow('Ingreso por descartes',E.ingDescarte)}
+     <tr class="border-b border-brand-100 bg-brand-50/40"><td class="py-1.5 pl-2 font-extrabold">Ingreso bruto</td><td class="px-2 text-right font-extrabold">${usd(E.ingresos)}</td></tr>
+     ${erow('Costo concentrado',E.costoConc,'text-clay-600')}${erow('Costo raíces (yuca)',E.costoYuca,'text-gold-600')}${erow('Costo sanidad',R.Sa.total,'text-clay-600')}</tbody>
+     <tfoot><tr class="border-t-2 border-brand-300"><td class="py-2 pl-2 font-extrabold">Margen (ingresos \u2212 alimento \u2212 sanidad)</td><td class="px-2 text-right font-extrabold ${E.margen>=0?'text-brand-700':'text-rose-600'}">${usd(E.margen)}</td></tr></tfoot></table>
+     <p class="text-[10px] text-brand-400 mt-2">Margen parcial: descuenta alimento (concentrado + raíces) y sanidad; no incluye mano de obra, instalaciones, reproducción ni otros costos fijos.</p></div>`);
+  <!--UI3b-->
+  $('rightcol').innerHTML=cFlow+fTbl+pTbl+coTbl+forTbl+saTbl+eTbl;
+}
+// ---- Ramp-up anual (dinámico) ----
+function renderRamp(){
+  const RAMP=rampModel();
+  const maxConc=Math.max(...RAMP.map(x=>x.conc),1);
+  const maxVenta=Math.max(...RAMP.map(x=>x.venta),1);
+  const bars=RAMP.map(x=>{
+    const hC=Math.round(x.conc/maxConc*100), hV=Math.round(x.venta/maxVenta*100), hY=Math.round(x.yuca/maxConc*100);
+    return `<div class="flex-1 flex flex-col items-center gap-1">
+      <div class="flex items-end gap-0.5 h-28 w-full justify-center">
+        <div class="w-3 sm:w-4 rounded-t kpi2" style="height:${hC}%" title="Concentrado ${fmt(x.conc,0)} kg"></div>
+        <div class="w-3 sm:w-4 rounded-t kpi3" style="height:${hY}%" title="Yuca ${fmt(x.yuca,0)} kg"></div>
+        <div class="w-3 sm:w-4 rounded-t kpi4" style="height:${hV}%" title="Cerdos a venta ${fmt(x.venta,0)}"></div>
+      </div>
+      <div class="text-[10px] font-bold text-brand-700">Año ${x.a}</div>
+      <div class="text-[9px] text-brand-400">${fmt(x.madres,0)} madres</div></div>`;
+  }).join('');
+  const legend=`<div class="flex items-center justify-center flex-wrap gap-3 mt-2 text-[10px] font-semibold">
+    <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded kpi2"></span>Conc. (kg)</span>
+    <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded kpi3"></span>Yuca (kg)</span>
+    <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded kpi4"></span>Cerdos a venta</span></div>`;
+  const graph=`<div class="flex items-end gap-2 sm:gap-4">${bars}</div>${legend}`;
+  const YR=RAMP; const A=areaYuca(YR);
+  const row=(l,key,d=0)=>`<tr class="border-b border-brand-50 hover:bg-brand-50/40">
+    <td class="py-1.5 pl-2 pr-3 font-semibold text-brand-800 sticky left-0 bg-white/90">${l}</td>
+    ${RAMP.map(x=>`<td class="px-3 text-right tabular-nums">${fmt(x[key],d)}</td>`).join('')}</tr>`;
+  const tbl=`<div class="overflow-x-auto"><table class="tbl w-full text-xs">
+    <thead><tr class="text-[10px] uppercase tracking-wide text-brand-500 border-b-2 border-brand-200">
+      <th class="text-left pl-2 pb-2 sticky left-0 bg-white/90">Indicador anual</th>
+      ${RAMP.map(x=>`<th class="text-right px-3 ${x.a>=3?'text-brand-700':''}">Año ${x.a}${x.a>=3?' · reg.':''}</th>`).join('')}</tr></thead>
+    <tbody>
+      ${row('Madres','madres')}${row('Verracos','verracos')}${row('Montas','montas')}${row('Gestantes / partos','gestantes')}${row('Lechones nacidos','nacidos')}${row('Lechones al destete','destete')}${row('Batería (lechones)','bateria')}${row('Cerdos en crecimiento','crecim')}${row('Cerdos en engorde','engorde')}
+      <tr class="border-b border-brand-100 bg-sky-50/50"><td class="py-1.5 pl-2 font-extrabold sticky left-0 bg-sky-50/90">Cerdos a venta</td>${RAMP.map(x=>`<td class="px-3 text-right font-extrabold text-sky-600">${fmt(x.venta,0)}</td>`).join('')}</tr>
+      ${row('Madres descarte','descM')}${row('Verracos descarte','descV')}
+      <tr class="border-b border-brand-100 bg-brand-50/50"><td class="py-1.5 pl-2 font-extrabold sticky left-0 bg-brand-50/90">Concentrado (kg)</td>${RAMP.map(x=>`<td class="px-3 text-right font-extrabold text-brand-700">${fmt(x.conc,0)}</td>`).join('')}</tr>
+      <tr class="border-b border-gold-400/20 bg-gold-400/5"><td class="py-1.5 pl-2 font-extrabold sticky left-0 bg-gold-400/10">Raíces/yuca (kg)</td>${RAMP.map(x=>`<td class="px-3 text-right font-extrabold text-gold-600">${fmt(x.yuca,0)}</td>`).join('')}</tr>
+      <tr class="border-b border-brand-100"><td class="py-1.5 pl-2 font-extrabold sticky left-0 bg-white/90">Área yuca (ha)</td>${A.totales.map(t=>`<td class="px-3 text-right font-extrabold text-gold-600">${fmt(t,2)}</td>`).join('')}</tr>
+      <tr class="bg-rose-50/40"><td class="py-1.5 pl-2 font-extrabold sticky left-0 bg-rose-50/80">Carne producida (kg)</td>${RAMP.map(x=>`<td class="px-3 text-right font-extrabold text-rose-600">${fmt(x.carne,0)}</td>`).join('')}</tr>
+    </tbody></table></div>`;
+  const note=`<p class="text-[10px] text-brand-400 mt-3 leading-relaxed">⚙️ <b>Vista dinámica:</b> el año 1 usa las <b>madres iniciales</b>, el hato crece hasta las <b>madres estabilizadas</b> y queda en régimen del año 3 al 5. Los años 3-5 se recalculan con todos los índices y la dieta editable; el perfil de arranque (año 1-2) sigue la forma de la simulación mensual del Excel, escalada a su hato. Con los valores por defecto (5 madres) reproduce exactamente las cifras originales del Excel.</p>`;
+  $('rampup').innerHTML=card('📈 Vista de ramp-up anual (Año 1 → 5)','dinámico · '+fmt(S.madresIni,0)+' → '+fmt(S.madres,0)+' madres',
+    `<div class="grid lg:grid-cols-5 gap-5"><div class="lg:col-span-2">${graph}</div><div class="lg:col-span-3">${tbl}</div></div>${note}`);
+}
+function computeAndRender(){
+  const R=computeAll();
+  renderKPIs(R);renderLeft(R);renderRight(R);renderRamp();
+  document.querySelectorAll('input[data-k]').forEach(inp=>inp.addEventListener('change',e=>{
+    const k=e.target.dataset.k;let v=parseFloat(e.target.value);if(isNaN(v))v=0;S[k]=v;computeAndRender();}));
+  document.querySelectorAll('input[data-fi]').forEach(inp=>inp.addEventListener('change',e=>{
+    const i=+e.target.dataset.fi,p=e.target.dataset.fp;let v=parseFloat(e.target.value);if(isNaN(v))v=0;S.feed[i][p]=v;computeAndRender();}));
+  document.querySelectorAll('input[data-fo]').forEach(inp=>inp.addEventListener('change',e=>{
+    const n=e.target.dataset.fo,p=e.target.dataset.fp;let v=parseFloat(e.target.value);if(isNaN(v))v=0;
+    const fr=S.forrajes.find(x=>x.n===n);if(fr)fr[p]=v;computeAndRender();}));
+}
+$('btnReset').addEventListener('click',()=>{S=JSON.parse(JSON.stringify(DEF));computeAndRender();});
+$('btnPrint').addEventListener('click',()=>window.print());
+computeAndRender();
+</script>
+</script>
+<!--JS-->
+</body>
+</html>

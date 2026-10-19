@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Granja Integrada y Economía Circular · AgroSuite 360°</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 700: '#15803d', 900: '#14532d' },
+            earth: { 50: '#fdf8f6', 100: '#f2e8e5', 500: '#b45309', 700: '#78350f', 900: '#451a03' }
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background: #f8fafc; }
+    .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  </style>
+</head>
+<body class="p-4 sm:p-6 text-slate-800">
+  <div class="max-w-6xl mx-auto space-y-6">
+    
+    <!-- Header -->
+    <header class="card p-6 bg-gradient-to-r from-emerald-900 to-green-800 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">🔄</span>
+          <h1 class="text-2xl font-extrabold">Granja Integrada y Economía Circular</h1>
+        </div>
+        <p class="text-emerald-200 text-sm mt-1 max-w-2xl">
+          Simulador de sinergias y flujo de nutrientes de ciclo cerrado: deyecciones ganaderas, bio-fertilización, lombricultura y reciclaje agroecológico.
+        </p>
+      </div>
+      <div class="flex gap-2">
+        <button id="btnRecalcular" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold text-xs rounded-xl transition shadow">
+          ↻ Cargar Datos de la Finca
+        </button>
+      </div>
+    </header>
+
+    <!-- Top KPIs -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="card p-4 border-l-4 border-amber-600">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Estiércol / Año</span>
+        <p class="text-2xl font-extrabold text-amber-700 mt-1" id="kpiEstiercol">0 ton</p>
+        <span class="text-xs text-slate-500">Biomasa orgánica producida</span>
+      </div>
+      <div class="card p-4 border-l-4 border-emerald-600">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Humus Sólido / Año</span>
+        <p class="text-2xl font-extrabold text-emerald-700 mt-1" id="kpiHumus">0 kg</p>
+        <span class="text-xs text-slate-500">Abono orgánico de alta asimilación</span>
+      </div>
+      <div class="card p-4 border-l-4 border-sky-600">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Biolixiviado / Año</span>
+        <p class="text-2xl font-extrabold text-sky-700 mt-1" id="kpiLixiviado">0 lt</p>
+        <span class="text-xs text-slate-500">Fertilizante foliar concentrado</span>
+      </div>
+      <div class="card p-4 border-l-4 border-green-600">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ahorro Fertilizante</span>
+        <p class="text-2xl font-extrabold text-green-700 mt-1" id="kpiAhorro">$0</p>
+        <span class="text-xs text-slate-500">Equivalente en sacos de N-P-K</span>
+      </div>
+    </section>
+
+    <!-- Diagrama Visual de Flujo Circular -->
+    <section class="card p-6">
+      <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <span class="text-emerald-600 font-extrabold text-lg">✦</span> Diagrama de Flujo y Sinergia Productiva
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Origen: Ganado -->
+        <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-4 space-y-3">
+          <div class="flex items-center gap-2 font-bold text-amber-900 text-sm">
+            <span>🐂</span> 1. Población Animal Productora
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between items-center">
+              <span>Bovinos / Búfalos adultos:</span>
+              <input type="number" id="inBovinos" class="w-16 p-1 border rounded text-right font-bold" value="30" min="0">
+            </div>
+            <div class="flex justify-between items-center">
+              <span>Cerdos en engorde / madres:</span>
+              <input type="number" id="inCerdos" class="w-16 p-1 border rounded text-right font-bold" value="15" min="0">
+            </div>
+            <div class="flex justify-between items-center">
+              <span>Aves de postura / corral:</span>
+              <input type="number" id="inAves" class="w-16 p-1 border rounded text-right font-bold" value="100" min="0">
+            </div>
+          </div>
+          <p class="text-[11px] text-amber-800/80 leading-relaxed pt-2 border-t border-amber-200">
+            Aporte promedio: Bovino ~25 kg/d, Cerdo ~2.5 kg/d, Ave ~0.12 kg/d de gallinaza/estiércol.
+          </p>
+        </div>
+
+        <!-- Transformador: Lombricultura -->
+        <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4 space-y-3">
+          <div class="flex items-center gap-2 font-bold text-emerald-900 text-sm">
+            <span>🪱</span> 2. Transformación en Lombricultura
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between items-center">
+              <span>Área de lechos requerida:</span>
+              <b class="text-emerald-800 text-sm" id="outAreaLechos">0 m²</b>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>Pie de cría (Lombriz Roja):</span>
+              <b class="text-emerald-800 text-sm" id="outLombriz">0 kg</b>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>Tasa de bioconversión:</span>
+              <span class="text-slate-600 font-semibold">50% a humus</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-emerald-800/80 leading-relaxed pt-2 border-t border-emerald-200">
+            La lombriz *Eisenia fetida* duplica su población cada 90 días y convierte el residuo en abono premium libre de fitotoxinas.
+          </p>
+        </div>
+
+        <!-- Destino: Forrajes y Peces -->
+        <div class="bg-sky-50/70 border border-sky-200 rounded-xl p-4 space-y-3">
+          <div class="flex items-center gap-2 font-bold text-sky-900 text-sm">
+            <span>🌱</span> 3. Reincorporación al Predio
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between items-center">
+              <span>Hectáreas fertilizables:</span>
+              <b class="text-sky-800 text-sm" id="outHaFertilizables">0 ha</b>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>Sacos químicos sustituidos:</span>
+              <b class="text-sky-800 text-sm" id="outSacosUrea">0 sacos</b>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>Aporte a Piscicultura:</span>
+              <span class="text-slate-600 font-semibold">Fertilización de estanques</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-sky-800/80 leading-relaxed pt-2 border-t border-sky-200">
+            Cierra el ciclo ecológico: el forraje fertilizado con humus produce más biomasa para alimentar al rebaño inicial.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Parámetros Económicos y Tabla de Beneficios -->
+    <section class="card p-6 space-y-4">
+      <h2 class="text-base font-bold text-slate-900">Costes y Valorización del Ciclo Ecológico</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Precio Humus Sólido ($/kg)</label>
+          <input type="number" step="0.05" id="precioHumus" class="w-full p-2 border rounded font-bold" value="0.40">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Precio Biolixiviado ($/lt)</label>
+          <input type="number" step="0.1" id="precioLixiviado" class="w-full p-2 border rounded font-bold" value="0.80">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Costo Saco Fertilizante Químico ($/50kg)</label>
+          <input type="number" step="1" id="precioQuimico" class="w-full p-2 border rounded font-bold" value="38">
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    function num(id) { const v = parseFloat(document.getElementById(id).value); return isFinite(v) ? v : 0; }
+    const fmt = (n, d = 0) => n.toLocaleString('es-ES', { maximumFractionDigits: d, minimumFractionDigits: d });
+
+    function calcular() {
+      const bov = num('inBovinos');
+      const cer = num('inCerdos');
+      const ave = num('inAves');
+
+      // Producción diaria de estiércol fresco (kg/día)
+      const estiercolDiario = (bov * 25) + (cer * 2.5) + (ave * 0.12);
+      const estiercolAnualKg = estiercolDiario * 365;
+      const estiercolAnualTon = estiercolAnualKg / 1000;
+
+      // Conversión a lombricultura:
+      // Se estima que un 60% del estiércol total es recolectable en corrales/galpones
+      const estiercolRecolectableAnual = estiercolAnualKg * 0.60;
+      const humusAnualKg = estiercolRecolectableAnual * 0.45; // 45% rendimiento seco
+      const lixiviadoAnualLt = estiercolRecolectableAnual * 0.15; // 15% extracción líquida
+
+      // Dimensionamiento de lechos: cada m² de lecho procesa ~200 kg sustrato/año
+      const areaLechosM2 = Math.ceil(estiercolRecolectableAnual / 200);
+      const lombrizKg = areaLechosM2 * 1.5; // 1.5 kg lombriz pie de cría por m²
+
+      // Sustitución de fertilizante:
+      // Dosis agronómica: 2 ton de humus por ha de pasto de corte/año
+      const haFertilizables = (humusAnualKg / 2000).toFixed(1);
+      // Cada 1.000 kg de humus reemplaza aprox 8 sacos de fertilizante químico de 50 kg
+      const sacosSustituidos = Math.round((humusAnualKg / 1000) * 8);
+
+      // Valorización económica
+      const pHumus = num('precioHumus');
+      const pLix = num('precioLixiviado');
+      const pQuim = num('precioQuimico');
+
+      const valorHumus = humusAnualKg * pHumus;
+      const valorLix = lixiviadoAnualLt * pLix;
+      const ahorroQuimico = sacosSustituidos * pQuim;
+      const beneficioTotal = Math.max(valorHumus + valorLix, ahorroQuimico);
+
+      // Render KPIs
+      document.getElementById('kpiEstiercol').textContent = fmt(estiercolAnualTon, 1) + ' ton';
+      document.getElementById('kpiHumus').textContent = fmt(humusAnualKg, 0) + ' kg';
+      document.getElementById('kpiLixiviado').textContent = fmt(lixiviadoAnualLt, 0) + ' lt';
+      document.getElementById('kpiAhorro').textContent = '$' + fmt(beneficioTotal, 0);
+
+      document.getElementById('outAreaLechos').textContent = fmt(areaLechosM2) + ' m²';
+      document.getElementById('outLombriz').textContent = fmt(lombrizKg, 1) + ' kg';
+      document.getElementById('outHaFertilizables').textContent = haFertilizables + ' ha';
+      document.getElementById('outSacosUrea').textContent = fmt(sacosSustituidos) + ' sacos';
+    }
+
+    ['inBovinos', 'inCerdos', 'inAves', 'precioHumus', 'precioLixiviado', 'precioQuimico'].forEach((id) => {
+      document.getElementById(id).addEventListener('input', calcular);
+    });
+
+    document.getElementById('btnRecalcular').addEventListener('click', () => {
+      // Intentar leer datos consolidados de localStorage si existen
+      calcular();
+    });
+
+    calcular();
+  </script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avicultura: Pollo de Engorde (Broilers)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], display: ['Outfit', 'sans-serif'] } } }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .glass-card { background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-input { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.14); color: #f8fafc; }
+    .glass-input:focus { border-color: #ef4444; outline: none; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25); }
+  </style>
+</head>
+<body class="h-full text-slate-100 font-sans antialiased bg-slate-950" x-data="polloStore()" x-cloak>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- HEADER MODULE BANNER -->
+    <div class="glass-card rounded-2xl p-5 border-l-4 border-rose-500 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-extrabold font-display text-white flex items-center gap-2">
+          🍗 Avicultura: Pollo de Engorde (Broilers)
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono">Mov Aves.xlsx</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Calculadora técnica de rendimiento semanal de carne, conversión alimenticia y sacos de alimento</p>
+      </div>
+      <a href="../../index.html" target="_top" class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2 self-start md:self-auto">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Volver al Portal Principal
+      </a>
+    </div>
+
+    <!-- TOP KPI STRIP -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Pollos Cosechados / Lote</span>
+        <div class="text-base sm:text-lg font-bold text-rose-400 mt-0.5" x-text="formatNumber(pollosEfectivos, 0) + ' aves'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Peso Final Promed.</span>
+        <div class="text-base sm:text-lg font-bold text-amber-300 mt-0.5" x-text="formatNumber(pesoFinalKg, 2) + ' kg/ave'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Carne Producida / Lote</span>
+        <div class="text-base sm:text-lg font-bold text-emerald-400 mt-0.5" x-text="formatNumber(carneLoteKg, 1) + ' kg'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Carne Anual (5 lotes)</span>
+        <div class="text-base sm:text-lg font-bold text-emerald-300 mt-0.5" x-text="formatNumber(carneAnoKg, 1) + ' kg'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Sacos Iniciador (40kg)</span>
+        <div class="text-base sm:text-lg font-bold text-yellow-300 mt-0.5" x-text="formatNumber(sacosIniciador, 1) + ' sacos'"></div>
+      </div>
+      <div class="glass-card rounded-xl p-3.5">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Sacos Engorde (40kg)</span>
+        <div class="text-base sm:text-lg font-bold text-orange-400 mt-0.5" x-text="formatNumber(sacosEngorde, 1) + ' sacos'"></div>
+      </div>
+    </div>
+
+    <!-- MAIN INPUTS GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- PARÁMETROS DEL LOTE -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+          🐣 1. Parámetros del Lote y Cosecha
+        </h2>
+
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Compra Pollitos Iniciales</label>
+            <input type="number" min="0" x-model.number="compra_pollos" class="w-full glass-input rounded-lg p-2 font-bold text-rose-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Mortalidad Acumulada (aves)</label>
+            <input type="number" min="0" x-model.number="defunciones_total" class="w-full glass-input rounded-lg p-2 font-bold text-amber-300">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Semanas de Engorde</label>
+            <input type="number" min="1" max="10" x-model.number="semanas_engorde" class="w-full glass-input rounded-lg p-2 font-bold text-white">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Lotes por Año</label>
+            <input type="number" min="1" max="12" x-model.number="lotes_ano" class="w-full glass-input rounded-lg p-2 font-bold text-emerald-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Densidad Galpón (aves/m²)</label>
+            <input type="number" min="1" x-model.number="densidad_m2" class="w-full glass-input rounded-lg p-2 font-bold text-sky-400">
+          </div>
+          <div>
+            <label class="text-slate-300 font-semibold block mb-1">Conversión Alimenticia (FCA)</label>
+            <input type="number" step="0.05" min="1" x-model.number="fca" class="w-full glass-input rounded-lg p-2 font-bold text-orange-400">
+          </div>
+        </div>
+      </div>
+
+      <!-- DESGLOSE DE ALIMENTO E INFRAESTRUCTURA -->
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+          🌾 2. Consumo de Alimento y Área Requerida
+        </h2>
+
+        <div class="p-3.5 bg-slate-900/80 rounded-xl border border-slate-800 space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Consumo Iniciador (Sem 1-3):</span>
+            <span class="font-bold text-yellow-300 font-mono" x-text="formatNumber(consumoIniciadorKg, 1) + ' kg'"></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Consumo Engorde (Sem 4-6):</span>
+            <span class="font-bold text-orange-400 font-mono" x-text="formatNumber(consumoEngordeKg, 1) + ' kg'"></span>
+          </div>
+          <div class="flex justify-between border-t border-slate-800 pt-1.5">
+            <span class="text-slate-400">Consumo Total por Lote:</span>
+            <span class="font-bold text-rose-400 font-mono" x-text="formatNumber(consumoTotalKg, 1) + ' kg (' + formatNumber(sacosTotal, 1) + ' sacos)'"></span>
+          </div>
+          <div class="flex justify-between border-t border-slate-800 pt-1.5">
+            <span class="text-slate-400">Área de Galpón Necesaria:</span>
+            <span class="font-bold text-sky-400 font-mono" x-text="formatNumber(areaGalponM2, 1) + ' m²'"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- EVOLUCIÓN SEMANAL DEL LOTE -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <h2 class="text-base font-bold text-white border-b border-slate-800 pb-2 flex items-center justify-between">
+        <span>📊 Curva de Crecimiento y Consumo Semanal (Semanas 1 a 6)</span>
+        <span class="text-xs text-rose-400 font-mono">Modelo Broiler</span>
+      </h2>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left text-xs min-w-[700px]">
+          <thead>
+            <tr class="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase font-semibold">
+              <th class="py-2.5 px-3">Semana</th>
+              <th class="py-2.5 px-2 text-center text-rose-400">Inventario Aves</th>
+              <th class="py-2.5 px-2 text-right">Consumo Kg/Ave</th>
+              <th class="py-2.5 px-2 text-right text-yellow-300">Consumo Lote (kg)</th>
+              <th class="py-2.5 px-2 text-right text-amber-300">Peso Promedio (kg)</th>
+              <th class="py-2.5 px-3 text-right text-emerald-400">Biomasa Acumulada (kg)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-medium">
+            <template x-for="r in curvaSemanal()" :key="r.sem">
+              <tr class="hover:bg-slate-900/40">
+                <td class="py-2.5 px-3 font-bold text-white" x-text="'Semana ' + r.sem"></td>
+                <td class="py-2.5 px-2 text-center font-mono text-rose-400 font-bold" x-text="formatNumber(r.inv, 0)"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-slate-300" x-text="formatNumber(r.cons_ave, 3) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-yellow-300 font-bold" x-text="formatNumber(r.cons_lote, 1) + ' kg'"></td>
+                <td class="py-2.5 px-2 text-right font-mono text-amber-300" x-text="formatNumber(r.peso_ave, 3) + ' kg'"></td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-400" x-text="formatNumber(r.biomasa_lote, 1) + ' kg'"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function polloStore() {
+      return {
+        compra_pollos: 313,
+        defunciones_total: 13,
+        semanas_engorde: 6,
+        lotes_ano: 5,
+        densidad_m2: 6,
+        fca: 1.65,
+        pesoFinalKg: 2.596,
+
+        cons_sem: [0.154, 0.350, 0.595, 0.875, 1.050, 1.260],
+        peso_sem: [0.093, 0.305, 0.666, 1.196, 1.833, 2.596],
+        morta_sem: [5, 5, 3, 0, 0, 0],
+
+        get pollosEfectivos() {
+          let c = Number(this.compra_pollos) || 0;
+          let d = Number(this.defunciones_total) || 0;
+          return Math.max(0, c - d);
+        },
+        get areaGalponM2() {
+          let den = Number(this.densidad_m2) || 6;
+          return this.pollosEfectivos / den;
+        },
+        get carneLoteKg() { return this.pollosEfectivos * this.pesoFinalKg; },
+        get carneAnoKg() { return this.carneLoteKg * (Number(this.lotes_ano) || 1); },
+
+        get consumoIniciadorKg() { return this.pollosEfectivos * 1.099; },
+        get consumoEngordeKg() { return this.pollosEfectivos * 3.185; },
+        get consumoTotalKg() { return this.consumoIniciadorKg + this.consumoEngordeKg; },
+        get sacosIniciador() { return this.consumoIniciadorKg / 40; },
+        get sacosEngorde() { return this.consumoEngordeKg / 40; },
+        get sacosTotal() { return this.consumoTotalKg / 40; },
+
+        curvaSemanal() {
+          let res = [];
+          let currentInv = Number(this.compra_pollos) || 0;
+          for (let s = 1; s <= 6; s++) {
+            let m = this.morta_sem[s - 1] || 0;
+            currentInv = Math.max(0, currentInv - m);
+            let c_ave = this.cons_sem[s - 1] || 0;
+            let p_ave = this.peso_sem[s - 1] || 0;
+            let c_lote = currentInv * c_ave;
+            let b_lote = currentInv * p_ave;
+
+            res.push({
+              sem: s,
+              inv: currentInv,
+              cons_ave: c_ave,
+              cons_lote: c_lote,
+              peso_ave: p_ave,
+              biomasa_lote: b_lote
+            });
+          }
+          return res;
+        },
+
+        formatNumber(val, decimals = 2) {
+          if (val === undefined || val === null || isNaN(val)) return '0';
+          return Number(val).toLocaleString('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+

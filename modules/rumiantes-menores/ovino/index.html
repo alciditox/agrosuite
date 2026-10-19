@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora Ovina — Modalidad Oveja-Cordero</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: { 50:'#f0f9f4',100:'#dcf2e5',200:'#bae5cd',300:'#8ad0ab',400:'#54b382',500:'#2f9765',600:'#1f7a50',700:'#1a6142',800:'#174e36',900:'#14402e' },
+        clay: { 50:'#faf7f2',100:'#f3ece1',200:'#e6d8c3',300:'#d4bb9a' }
+      },
+      fontFamily: { sans: ['Inter','system-ui','Segoe UI','sans-serif'] },
+      boxShadow: { soft: '0 1px 2px rgba(16,24,40,.04), 0 8px 24px -12px rgba(16,24,40,.18)' }
+    }
+  }
+}
+</script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-clay-50 text-slate-800 antialiased">
+
+<!-- ===== Encabezado ===== -->
+<header class="sticky top-0 z-30 backdrop-blur bg-white/80 border-b border-clay-200">
+  <div class="mx-auto max-w-[1400px] px-4 py-3 flex flex-wrap items-center gap-3">
+    <div class="flex items-center gap-3 mr-auto">
+      <div class="size-10 grid place-items-center rounded-xl bg-brand-600 text-white text-lg font-bold">O</div>
+      <div>
+        <h1 class="font-semibold leading-tight">Calculadora Ovina · Modalidad Oveja‑Cordero</h1>
+        <p class="text-xs text-slate-500">Corderos engordados y vendidos a matadero · proyección de rebaño, producción de carne, balance forrajero e instalaciones</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="btn-reset" class="btn-ghost">Restaurar valores</button>
+      <button id="btn-csv" class="btn-ghost">Exportar CSV</button>
+      <button id="btn-print" class="btn-primary">Imprimir / PDF</button>
+    </div>
+  </div>
+</header>
+
+<main class="mx-auto max-w-[1400px] px-4 py-6 grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)] items-start">
+
+  <!-- ===== Panel de parámetros ===== -->
+  <aside class="lg:sticky lg:top-[76px] card p-0 overflow-hidden">
+    <div class="px-4 py-3 border-b border-clay-200 bg-white">
+      <h2 class="font-semibold text-sm uppercase tracking-wide text-slate-500">Parámetros de entrada</h2>
+    </div>
+    <div class="divide-y divide-clay-200 max-h-[calc(100vh-160px)] overflow-y-auto scroll-thin">
+
+      <section class="p-4 space-y-3">
+        <h3 class="sect">Rebaño inicial</h3>
+        <label class="field"><span>Ovejas de compra (año 1)</span>
+          <input id="compraOvejas" type="number" min="1" step="1" class="inp"></label>
+        <label class="field"><span>Ovejas por carnero (monta)</span>
+          <input id="ovejasPorCarnero" type="number" min="1" step="1" class="inp"></label>
+        <label class="field"><span>Carneros de reposición por año</span>
+          <input id="carnerosPorAnio" type="number" min="0" step="1" class="inp"></label>
+        <label class="field"><span>Años de uso del carnero</span>
+          <input id="aniosUsoCarnero" type="number" min="1" max="10" step="1" class="inp"></label>
+        <label class="field"><span>Horizonte (años)</span>
+          <input id="years" type="number" min="1" max="10" step="1" class="inp"></label>
+      </section>
+
+      <section class="p-4 space-y-3">
+        <h3 class="sect">Reproducción</h3>
+        <label class="field"><span>Pariciones al año (%)</span>
+          <input id="paricGlobal" type="number" min="0" max="100" step="1" class="inp"></label>
+        <label class="field"><span>Número de crías por oveja y año</span>
+          <input id="criasGlobal" type="number" min="0" step="0.05" class="inp"></label>
+        <label class="field"><span>Gestación (meses, dimensiona parideras)</span>
+          <input id="gestacionMeses" type="number" min="1" step="1" class="inp"></label>
+        <p class="text-[11px] text-slate-500">Estos valores fijan el promedio de todos los años. Para ajustar año por año usa la tabla de indicadores.</p>
+      </section>
+
+      <section class="p-4 space-y-3">
+        <h3 class="sect">Pesos a matadero (kg)</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="field"><span class="text-[11px]">Cordero (macho engorde)</span>
+            <input id="pesoCordero" type="number" min="1" step="0.5" class="inp"></label>
+          <label class="field"><span class="text-[11px]">Cordera / borrega descarte</span>
+            <input id="pesoCordera" type="number" min="1" step="0.5" class="inp"></label>
+          <label class="field"><span class="text-[11px]">Oveja descarte</span>
+            <input id="pesoOveja" type="number" min="1" step="0.5" class="inp"></label>
+          <label class="field"><span class="text-[11px]">Carnero descarte</span>
+            <input id="pesoCarnero" type="number" min="1" step="0.5" class="inp"></label>
+        </div>
+      </section>
+
+      <section class="p-4 space-y-3">
+        <h3 class="sect">Factores de conversión (UA)</h3>
+        <div id="fcWrap" class="grid grid-cols-2 gap-2"></div>
+      </section>
+
+      <section class="p-4 space-y-3">
+        <h3 class="sect">Distribución forrajera</h3>
+        <div id="forrajeWrap" class="space-y-2"></div>
+      </section>
+
+      <section class="p-4 space-y-3">
+        <h3 class="sect">Precios (opcional)</h3>
+        <label class="field"><span>Precio kg carne en pie</span>
+          <input id="pCarne" type="number" min="0" step="100" class="inp"></label>
+      </section>
+
+      <section class="p-4 space-y-2">
+        <h3 class="sect">Indicadores por año</h3>
+        <p class="text-xs text-slate-500">Pariciones, crías, descarte y mortalidad en % anual.</p>
+        <button id="btn-ind" class="btn-ghost w-full">Editar tabla de indicadores</button>
+      </section>
+    </div>
+  </aside>
+
+  <!-- ===== Resultados ===== -->
+  <div class="space-y-6 min-w-0">
+
+    <!-- KPIs -->
+    <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" id="kpis"></section>
+
+    <!-- Gráficos -->
+    <section class="grid gap-4 xl:grid-cols-2">
+      <div class="card p-4">
+        <h3 class="card-title">Evolución del inventario por categoría</h3>
+        <div class="h-[300px]"><canvas id="chHato"></canvas></div>
+      </div>
+      <div class="card p-4">
+        <h3 class="card-title">Producción de carne por año</h3>
+        <div class="h-[300px]"><canvas id="chProd"></canvas></div>
+      </div>
+    </section>
+
+    <!-- Tabs de tablas -->
+    <section class="card p-0 overflow-hidden">
+      <div class="flex gap-1 border-b border-clay-200 px-2 pt-2 overflow-x-auto scroll-thin" id="tabs">
+        <button class="tab" data-tab="rebano">Movimiento de rebaño</button>
+        <button class="tab" data-tab="forraje">Balance forrajero</button>
+        <button class="tab" data-tab="instalaciones">Instalaciones</button>
+        <button class="tab" data-tab="ingresos">Ingresos</button>
+      </div>
+      <div id="panels" class="p-0"></div>
+    </section>
+
+    <!-- Cuadro de producción en el formato de la hoja original -->
+    <section class="space-y-4" id="cuadros">
+      <div class="card p-0 overflow-hidden">
+        <div class="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-clay-200 bg-clay-50">
+          <div class="mr-auto">
+            <h3 class="font-semibold text-sm">Producción de animales para matadero</h3>
+            <p class="text-[11px] text-slate-500">Animales vendidos, peso promedio y kilogramos por categoría</p>
+          </div>
+          <button id="csvCarne" class="btn-ghost text-xs">Descargar cuadro</button>
+        </div>
+        <div id="kpiCarne" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 p-4 pb-0"></div>
+        <div id="cuadroCarne"></div>
+        <div class="p-4 border-t border-clay-200">
+          <p class="text-[11px] uppercase tracking-wide text-slate-500 mb-2">Kilogramos de carne por categoría y año</p>
+          <div class="h-[280px]"><canvas id="chCarne"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <p class="text-xs text-slate-400 px-1 pb-4">Modelo determinístico replicado desde la hoja de cálculo original (Modalidad Ovina Oveja‑Cordero). Los resultados son estimaciones técnicas, no una garantía de desempeño productivo.</p>
+  </div>
+</main>
+
+<!-- Modal de indicadores -->
+<div id="modal" class="fixed inset-0 z-40 hidden">
+  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" data-close></div>
+  <div class="relative mx-auto mt-10 w-[min(1100px,94vw)] max-h-[85vh] overflow-auto scroll-thin card p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold">Indicadores técnicos por año (%)</h3>
+      <button class="btn-ghost" data-close>Cerrar</button>
+    </div>
+    <div id="indWrap" class="overflow-auto scroll-thin"></div>
+  </div>
+</div>
+
+<script src="model.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
